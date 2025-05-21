@@ -3,6 +3,7 @@ from pororo import Pororo
 from pororo.pororo import SUPPORTED_TASKS
 from utils.image_util import plt_imshow, put_text
 import warnings
+import os
 
 warnings.filterwarnings('ignore')
 
@@ -77,10 +78,46 @@ class PororoOcr:
             # print(text)
 
         plt_imshow(["Original", "ROI"], [img, roi_img], figsize=(16, 10))
+        
+    def rotate_and_ocr(img_path):
+        
+        ocr_model = Pororo(task="ocr", lang="ko", model="brainocr")
+        
+        img = cv2.imread(img_path)
+        angles = [0, 90, 180, 270]
+        best_result = ""
+        max_confidence = 0
+
+        for angle in angles:
+            rotated_img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE if angle == 90 else 
+                                    cv2.ROTATE_180 if angle == 180 else 
+                                    cv2.ROTATE_90_COUNTERCLOCKWISE if angle == 270 else img)
+            
+            result = ocr_model(rotated_img)
+            confidence = sum([res['score'] for res in result]) / len(result)
+            
+            if confidence > max_confidence:
+                max_confidence = confidence
+                best_result = result
+
+        return best_result
+
 
 
 if __name__ == "__main__":
     ocr = PororoOcr()
-    image_path = input("Enter image path: ")
-    text = ocr.run_ocr(image_path, debug=True)
-    print('Result :', text)
+    # image_path = input("Enter image path: ")
+    IMAGE_PATH = "data"
+    
+    
+    for filename in os.listdir(IMAGE_PATH):
+        filepath = os.path.join(IMAGE_PATH,filename)
+        
+        # if filepath.lower().endswith(('.png', '.jpg', '.jpeg')):
+        print(f"Processing {filepath}...")
+        # result = ocr(filepath)
+        # print(f"OCR result for {filepath}: {result}")
+        text = ocr.run_ocr(filepath, debug=False)
+        print(f'Result for {filepath} : {text}')
+        #else:
+            # print(f"Skipping non-image file: {filepath}")
