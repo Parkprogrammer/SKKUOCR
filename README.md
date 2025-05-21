@@ -1,0 +1,2 @@
+# SKKUOCR
+SKKU OCR project
