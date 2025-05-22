@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/A_000.png",
+  "bbox": {
+    "description": "Convexity",
+    "vertices": [
+      {
+        "x": 26,
+        "y": 499
+      },
+      {
+        "x": 148,
+        "y": 499
+      },
+      {
+        "x": 148,
+        "y": 556
+      },
+      {
+        "x": 26,
+        "y": 556
+      }
+    ]
+  },
+  "wrong_prediction": "Conven'g",
+  "correct_text": "Convexity",
+  "confidence": 0.95
+}

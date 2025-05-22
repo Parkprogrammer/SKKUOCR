@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/A_000.png",
+  "bbox": {
+    "description": "⟨ A𝛌𝑲+1 – A𝛌𝑲 , 𝛌∗⟩",
+    "vertices": [
+      {
+        "x": 482,
+        "y": 764
+      },
+      {
+        "x": 802,
+        "y": 764
+      },
+      {
+        "x": 802,
+        "y": 820
+      },
+      {
+        "x": 482,
+        "y": 820
+      }
+    ]
+  },
+  "wrong_prediction": "< A4-A* jle)",
+  "correct_text": "⟨ A𝛌𝑲+1 – A𝛌𝑲 , 𝛌∗⟩",
+  "confidence": 0.9
+}

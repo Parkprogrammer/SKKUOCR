@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/A_000.png",
+  "bbox": {
+    "description": "fact. f: ℝⁿ → ℝ , A ∈ ℝⁿˣᵖ\nlet g(x) = f(Ax), ℝᵖ → ℝᵐ\n\n∇g(x) = Aᵀ∇f(Ax)",
+    "vertices": [
+      {
+        "x": 10,
+        "y": 104
+      },
+      {
+        "x": 703,
+        "y": 104
+      },
+      {
+        "x": 703,
+        "y": 233
+      },
+      {
+        "x": 10,
+        "y": 233
+      }
+    ]
+  },
+  "wrong_prediction": "Fact- f:R+( , Aep'* Let 8(x) f(m),R'-(' V&%) ATf(Ax) PX",
+  "correct_text": "fact. f: ℝⁿ → ℝ , A ∈ ℝⁿˣᵖ\nlet g(x) = f(Ax), ℝᵖ → ℝᵐ\n\n∇g(x) = Aᵀ∇f(Ax)",
+  "confidence": 0.9
+}

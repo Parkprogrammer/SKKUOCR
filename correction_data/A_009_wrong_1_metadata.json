@@ -1,7 +1,7 @@
 {
   "original_image": "test/handwriting/A_009.png",
   "bbox": {
-    "description": "① Unit Vector\nU: Unit Vector",
+    "description": "Ø Unit Vector\nu: Unit Vector",
     "vertices": [
       {
         "x": 40,
@@ -22,6 +22,6 @@
     ]
   },
   "wrong_prediction": "Umit vector u; unt vector",
-  "correct_text": "① Unit Vector\nU: Unit Vector",
-  "confidence": 0.95
+  "correct_text": "Ø Unit Vector\nu: Unit Vector",
+  "confidence": 0.9
 }

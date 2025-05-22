@@ -181,6 +181,8 @@ class PororoOcrWithCorrection:
         if not self.ocr_result['description']:
             return "No text detected."
         
+        self.original_descriptions = self.ocr_result['description'].copy()
+        
         if use_corr and self.gpt_corrector:
             cropped_images = self.gpt_corrector.crop_txt_region(
                 img_path, self.ocr_result['bounding_poly']
@@ -325,6 +327,114 @@ class PororoOcrWithCorrection:
     @staticmethod
     def get_available_models():
         return SUPPORTED_TASKS["ocr"].get_available_models()
+    
+    def save_all_text_data(self, output_dir: str, save_images=False):
+        """
+        OCR로 인식된 모든 텍스트(올바른 것과 수정된 것 모두)를 저장합니다.
+        
+        Args:
+            output_dir: 저장할 디렉토리 경로
+            save_images: 이미지도 함께 저장할지 여부 (기본값: False)
+        """
+        if not self.ocr_result or not self.ocr_result.get('bounding_poly'):
+            print("No OCR Results, run correction func first")
+            return
+        
+        os.makedirs(output_dir, exist_ok=True)
+        
+        base_name = os.path.splitext(os.path.basename(self.img_path))[0]
+        all_data = []
+        
+        for i, text_result in enumerate(self.ocr_result['bounding_poly']):
+            
+            # original_text = self.ocr_result['description'][i] if i < len(self.ocr_result['description']) else ""
+            original_text = self.original_descriptions[i] if i < len(self.original_descriptions) else ""
+            
+            
+            is_corrected = False
+            corrected_text = original_text
+            confidence = 1.0
+            
+            if i < len(self.corrections):
+                corrected_text = self.corrections[i]['corrected']
+                is_corrected = not self.corrections[i]['is_correct']
+                confidence = self.corrections[i]['confidence']
+            
+            
+            metadata = {
+                'original_image': self.img_path,
+                'bbox_index': i,
+                'bbox': text_result,
+                'original_text': original_text,
+                'corrected_text': corrected_text,
+                'is_corrected': is_corrected,
+                'confidence': confidence
+            }
+            
+            all_data.append(metadata)
+            
+            # NOTE: If image check is also needed
+            if save_images:
+                img = cv2.imread(self.img_path)
+                vertices = text_result['vertices']
+                points = np.array([[v['x'], v['y']] for v in vertices], dtype=np.int32)
+                
+                
+                x_min, y_min = points.min(axis=0)
+                x_max, y_max = points.max(axis=0)
+                
+                
+                margin = 5
+                x_min = max(0, x_min - margin)
+                y_min = max(0, y_min - margin)
+                x_max = min(img.shape[1], x_max + margin)
+                y_max = min(img.shape[0], y_max + margin)
+                
+                
+                cropped = img[y_min:y_max, x_min:x_max]
+                
+                
+                safe_text = corrected_text.replace('/', '_').replace('\\', '_').replace(':', '_').replace('*', '_').replace('?', '_').replace('"', '_').replace('<', '_').replace('>', '_').replace('|', '_')
+                
+                
+                status = "corrected" if is_corrected else "original"
+                filename = f"{base_name}_{i:03d}_{status}_{safe_text[:20]}.png"
+                
+                
+                output_path = os.path.join(output_dir, filename)
+                cv2.imwrite(output_path, cropped)
+        
+        
+        all_data_filename = f"{base_name}_all_text_data.json"
+        json_path = os.path.join(output_dir, all_data_filename)
+        
+        with open(json_path, 'w', encoding='utf-8') as f:
+            json.dump(all_data, f, ensure_ascii=False, indent=2)
+        
+        print(f"{len(all_data)} text data saved in {json_path}.")
+        
+        
+        txt_filename = f"{base_name}_all_text_data.txt"
+        txt_path = os.path.join(output_dir, txt_filename)
+        
+        with open(txt_path, 'w', encoding='utf-8') as f:
+            f.write(f"Image file: {self.img_path}\n")
+            f.write(f"Number of segmented texts: {len(all_data)}\n\n")
+            
+            for i, item in enumerate(all_data):
+                f.write(f"[{i+1}] bbox {item['bbox_index']}\n")
+                f.write(f"Origin text: {item['original_text']}\n")
+                
+                if item['is_corrected']:
+                    f.write(f"Teacher Label: {item['corrected_text']} (Confidence: {item['confidence']})\n")
+                else:
+                    f.write("correct\n")
+                
+                f.write("-" * 50 + "\n")
+        
+        print(f"text summarization saved in {txt_path}.")
+        
+        return all_data
         
 if __name__ == "__main__":
     
@@ -340,6 +450,7 @@ if __name__ == "__main__":
     
     IMAGE_PATH = "test/handwriting"
     CORRECTION_OUTPUT_DIR = "correction_data"
+    ALL_TEXT_OUTPUT_DIR = "text_data" 
     
     for filename in os.listdir(IMAGE_PATH):
         if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
@@ -352,6 +463,8 @@ if __name__ == "__main__":
             
             
             ocr.save_correction_data_for_finetuning(CORRECTION_OUTPUT_DIR)
+            
+            ocr.save_all_text_data(ALL_TEXT_OUTPUT_DIR)
             
             
             wrong_predictions = ocr.get_wrong_predictions()

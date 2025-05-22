@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/A_000.png",
+  "bbox": {
+    "description": "(λCH - λk, λxk - λkH)",
+    "vertices": [
+      {
+        "x": 526,
+        "y": 1126
+      },
+      {
+        "x": 864,
+        "y": 1126
+      },
+      {
+        "x": 864,
+        "y": 1207
+      },
+      {
+        "x": 526,
+        "y": 1207
+      }
+    ]
+  },
+  "wrong_prediction": "(1* 1) 民x - )) -",
+  "correct_text": "(λCH - λk, λxk - λkH)",
+  "confidence": 0.8
+}

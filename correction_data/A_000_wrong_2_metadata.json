@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/A_000.png",
+  "bbox": {
+    "description": "hxI",
+    "vertices": [
+      {
+        "x": 685,
+        "y": 257
+      },
+      {
+        "x": 717,
+        "y": 257
+      },
+      {
+        "x": 717,
+        "y": 277
+      },
+      {
+        "x": 685,
+        "y": 277
+      }
+    ]
+  },
+  "wrong_prediction": "h",
+  "correct_text": "hxI",
+  "confidence": 0.95
+}

@@ -1,0 +1,74 @@
+Image file: test/handwriting/A_000.png
+Number of segmented texts: 17
+
+[1] bbox 0
+Origin text: a(y) orgbax S<1%) fr)< (6.3) Len6.l u우 ()=^*)
+Teacher Label: (6.2) a(y) = argmax_x {<y, x> - f(x)} Lem. 6.1 ∇_x f(y) = a(y) (Confidence: 0.9)
+--------------------------------------------------
+[2] bbox 1
+Origin text: Fact- f:R+( , Aep'* Let 8(x) f(m),R'-(' V&%) ATf(Ax) PX
+Teacher Label: fact. f: ℝⁿ → ℝ , A ∈ ℝⁿˣᵖ
+let g(x) = f(Ax), ℝᵖ → ℝᵐ
+
+∇g(x) = Aᵀ∇f(Ax) (Confidence: 0.9)
+--------------------------------------------------
+[3] bbox 2
+Origin text: h
+Teacher Label: hxI (Confidence: 0.95)
+--------------------------------------------------
+[4] bbox 3
+Origin text: pxn
+correct
+--------------------------------------------------
+[5] bbox 4
+Origin text: -\f(x) = A'7sp
+Teacher Label: -∇f(xₖ) = Aᵀλₖ₊₁ (Confidence: 0.9)
+--------------------------------------------------
+[6] bbox 5
+Origin text: )[ )* -> ofk) + A | =0
+Teacher Label: x_k, \lambda_k \rightarrow \nabla f(x_k) + A^T \lambda_k = 0 (Confidence: 0.95)
+--------------------------------------------------
+[7] bbox 6
+Origin text: Conven'g
+Teacher Label: Convexity (Confidence: 0.95)
+--------------------------------------------------
+[8] bbox 7
+Origin text: [m- 2) Df(4) = f[지 )
+Teacher Label: (x_{k+1} - x_*) \nabla f(x_*) \leq f(x_{k+1}) (Confidence: 0.9)
+--------------------------------------------------
+[9] bbox 8
+Origin text: f[제)
+Teacher Label: f(λ∗) (Confidence: 0.95)
+--------------------------------------------------
+[10] bbox 9
+Origin text: 지대-)* A)x )
+Teacher Label: x_{k+1} - x_* / A^T λ_* (Confidence: 0.95)
+--------------------------------------------------
+[11] bbox 10
+Origin text: f(x ) ㅡ (ㅈ재) 느
+Teacher Label: f(x_k) - f(x_{k+1}) ≤ (Confidence: 0.95)
+--------------------------------------------------
+[12] bbox 11
+Origin text: < A4-A* jle)
+Teacher Label: ⟨ A𝛌𝑲+1 – A𝛌𝑲 , 𝛌∗⟩ (Confidence: 0.9)
+--------------------------------------------------
+[13] bbox 12
+Origin text: 스' < 음 (3- ~ 北r) jh)
+Teacher Label: ≤ 〈\frac{1}{\rho}(\lambda_{k+1} - \lambda_{k}), \lambda_{k+1}\rangle (Confidence: 0.9)
+--------------------------------------------------
+[14] bbox 13
+Origin text: Ch.1%)
+Teacher Label: Ch. 1.0) (Confidence: 0.95)
+--------------------------------------------------
+[15] bbox 14
+Origin text:  ( )u - 7대 )
+Teacher Label: 𝜆택 ( 𝜆K - 𝜆H ) (Confidence: 0.9)
+--------------------------------------------------
+[16] bbox 15
+Origin text: (1* 1) 民x - )) -
+Teacher Label: (λCH - λk, λxk - λkH) (Confidence: 0.8)
+--------------------------------------------------
+[17] bbox 16
+Origin text: 느
+Teacher Label: ㄴ (Confidence: 0.95)
+--------------------------------------------------

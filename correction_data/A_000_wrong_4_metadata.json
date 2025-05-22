@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/A_000.png",
+  "bbox": {
+    "description": "x_k, \\lambda_k \\rightarrow \\nabla f(x_k) + A^T \\lambda_k = 0",
+    "vertices": [
+      {
+        "x": 27,
+        "y": 414
+      },
+      {
+        "x": 531,
+        "y": 414
+      },
+      {
+        "x": 531,
+        "y": 472
+      },
+      {
+        "x": 27,
+        "y": 472
+      }
+    ]
+  },
+  "wrong_prediction": ")[ )* -> ofk) + A | =0",
+  "correct_text": "x_k, \\lambda_k \\rightarrow \\nabla f(x_k) + A^T \\lambda_k = 0",
+  "confidence": 0.95
+}

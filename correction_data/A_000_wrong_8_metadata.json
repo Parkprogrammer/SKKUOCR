@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/A_000.png",
+  "bbox": {
+    "description": "x_{k+1} - x_* / A^T λ_*",
+    "vertices": [
+      {
+        "x": 499,
+        "y": 668
+      },
+      {
+        "x": 768,
+        "y": 668
+      },
+      {
+        "x": 768,
+        "y": 722
+      },
+      {
+        "x": 499,
+        "y": 722
+      }
+    ]
+  },
+  "wrong_prediction": "지대-)* A)x )",
+  "correct_text": "x_{k+1} - x_* / A^T λ_*",
+  "confidence": 0.95
+}

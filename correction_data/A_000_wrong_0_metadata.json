@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/A_000.png",
+  "bbox": {
+    "description": "(6.2) a(y) = argmax_x {<y, x> - f(x)} Lem. 6.1 ∇_x f(y) = a(y)",
+    "vertices": [
+      {
+        "x": 17,
+        "y": 10
+      },
+      {
+        "x": 719,
+        "y": 10
+      },
+      {
+        "x": 719,
+        "y": 69
+      },
+      {
+        "x": 17,
+        "y": 69
+      }
+    ]
+  },
+  "wrong_prediction": "a(y) orgbax S<1%) fr)< (6.3) Len6.l u우 ()=^*)",
+  "correct_text": "(6.2) a(y) = argmax_x {<y, x> - f(x)} Lem. 6.1 ∇_x f(y) = a(y)",
+  "confidence": 0.9
+}

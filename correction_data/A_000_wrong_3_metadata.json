@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/A_000.png",
+  "bbox": {
+    "description": "-∇f(xₖ) = Aᵀλₖ₊₁",
+    "vertices": [
+      {
+        "x": 606,
+        "y": 413
+      },
+      {
+        "x": 853,
+        "y": 413
+      },
+      {
+        "x": 853,
+        "y": 477
+      },
+      {
+        "x": 606,
+        "y": 477
+      }
+    ]
+  },
+  "wrong_prediction": "-\\f(x) = A'7sp",
+  "correct_text": "-∇f(xₖ) = Aᵀλₖ₊₁",
+  "confidence": 0.9
+}

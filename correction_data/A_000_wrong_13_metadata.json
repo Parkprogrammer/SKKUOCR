@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/A_000.png",
+  "bbox": {
+    "description": "𝜆택 ( 𝜆K - 𝜆H )",
+    "vertices": [
+      {
+        "x": 530,
+        "y": 1020
+      },
+      {
+        "x": 800,
+        "y": 1020
+      },
+      {
+        "x": 800,
+        "y": 1076
+      },
+      {
+        "x": 530,
+        "y": 1076
+      }
+    ]
+  },
+  "wrong_prediction": " ( )u - 7대 )",
+  "correct_text": "𝜆택 ( 𝜆K - 𝜆H )",
+  "confidence": 0.9
+}

@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/A_000.png",
+  "bbox": {
+    "description": "(x_{k+1} - x_*) \\nabla f(x_*) \\leq f(x_{k+1})",
+    "vertices": [
+      {
+        "x": 206,
+        "y": 579
+      },
+      {
+        "x": 630,
+        "y": 579
+      },
+      {
+        "x": 630,
+        "y": 638
+      },
+      {
+        "x": 206,
+        "y": 638
+      }
+    ]
+  },
+  "wrong_prediction": "[m- 2) Df(4) = f[지 )",
+  "correct_text": "(x_{k+1} - x_*) \\nabla f(x_*) \\leq f(x_{k+1})",
+  "confidence": 0.9
+}
