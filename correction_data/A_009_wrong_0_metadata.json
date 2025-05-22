@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/A_009.png",
+  "bbox": {
+    "description": "① Standard basis for V₃\n𝑖 ≡ <1,0,0>, 𝑗 ≡ <0,1,0>, 𝑘 ≡ <0,0,1>\nU = <x, y, z> ⇒ U = x<1,0,0> + y<0,1,0> + z<0,0,1>\n= xi + yj + zk.",
+    "vertices": [
+      {
+        "x": 38,
+        "y": 3
+      },
+      {
+        "x": 608,
+        "y": 3
+      },
+      {
+        "x": 608,
+        "y": 162
+      },
+      {
+        "x": 38,
+        "y": 162
+      }
+    ]
+  },
+  "wrong_prediction": "Standard bosis Sor Va ia <1.0.0) j* <o.1.0> Re (0.0.1> U=<그.y.조) = |&=X<1.a.0> + 심(0.1.0> +근<0.0.1} =** + 님; * 근kR",
+  "correct_text": "① Standard basis for V₃\n𝑖 ≡ <1,0,0>, 𝑗 ≡ <0,1,0>, 𝑘 ≡ <0,0,1>\nU = <x, y, z> ⇒ U = x<1,0,0> + y<0,1,0> + z<0,0,1>\n= xi + yj + zk.",
+  "confidence": 0.95
+}

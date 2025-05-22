@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/A_009.png",
+  "bbox": {
+    "description": "ㅅI=1",
+    "vertices": [
+      {
+        "x": 234,
+        "y": 292
+      },
+      {
+        "x": 290,
+        "y": 292
+      },
+      {
+        "x": 290,
+        "y": 316
+      },
+      {
+        "x": 234,
+        "y": 316
+      }
+    ]
+  },
+  "wrong_prediction": "|씨=",
+  "correct_text": "ㅅI=1",
+  "confidence": 0.85
+}

@@ -244,6 +244,141 @@ def rotate_image(image, angle):
     return rotated
 
 
+# def get_text(image_list, recognizer, converter, opt2val: dict, original_img: np.ndarray):
+#     imgW = opt2val["imgW"]
+#     imgH = opt2val["imgH"]
+#     adjust_contrast = opt2val["adjust_contrast"]
+#     batch_size = opt2val["batch_size"]
+#     n_workers = opt2val["n_workers"]
+#     contrast_ths = opt2val["contrast_ths"]
+
+#     # TODO: figure out what is this for
+#     # batch_max_length = int(imgW / 10)
+
+#     coord = [item[0] for item in image_list]
+#     img_list = [item[1] for item in image_list]
+#     AlignCollate_normal = AlignCollate(imgH, imgW, adjust_contrast)
+#     test_data = ListDataset(img_list)
+#     test_loader = torch.utils.data.DataLoader(
+#         test_data,
+#         batch_size=batch_size,
+#         shuffle=False,
+#         num_workers=n_workers,
+#         collate_fn=AlignCollate_normal,
+#         pin_memory=True,
+#     )
+
+
+#     '''DEBUG'''
+#     contrast_ths = 0.2
+    
+#     # predict first round
+#     result1 = second_recognizer_predict(recognizer, converter, test_loader, opt2val)
+
+#     # predict second round
+#     low_confident_idx = [
+#         i for i, item in enumerate(result1) if (item[1] < contrast_ths)
+#     ]
+
+    
+#     # if len(low_confident_idx) > 0:
+#     #     img_list2 = [img_list[i] for i in low_confident_idx]
+#     #     AlignCollate_contrast = AlignCollate(imgH, imgW, adjust_contrast)
+#     #     test_data = ListDataset(img_list2)
+#     #     test_loader = torch.utils.data.DataLoader(
+#     #         test_data,
+#     #         batch_size=batch_size,
+#     #         shuffle=False,
+#     #         num_workers=n_workers,
+#     #         collate_fn=AlignCollate_contrast,
+#     #         pin_memory=True,
+#     #     )
+#     #     result2 = recognizer_predict(recognizer, converter, test_loader,
+#     #                                  opt2val)
+    
+#     if len(low_confident_idx) > 0:
+#         img_list2 = [img_list[i] for i in low_confident_idx]
+#         results2 = []
+
+#         for img in img_list2:
+#             best_result = None
+#             best_confidence = 0
+
+#             # Original image OCR
+#             AlignCollate_contrast = AlignCollate(imgH, imgW, adjust_contrast)
+#             test_data = ListDataset([img])
+#             test_loader = torch.utils.data.DataLoader(
+#                 test_data,
+#                 batch_size=1,
+#                 shuffle=False,
+#                 num_workers=n_workers,
+#                 collate_fn=AlignCollate_contrast,
+#                 pin_memory=True,
+#             )
+#             result = second_recognizer_predict(recognizer, converter, test_loader, opt2val)[0]
+#             # print(f"Original Text: {result[0]}, Confidence: {result[1]}")
+
+#             # Compare confidence with rotation
+#             for angle in [90, 270]:
+#                 rotated_img = rotate_image(img, angle)
+#                 test_data = ListDataset([rotated_img])
+#                 test_loader = torch.utils.data.DataLoader(
+#                     test_data,
+#                     batch_size=1,
+#                     shuffle=False,
+#                     num_workers=n_workers,
+#                     collate_fn=AlignCollate_contrast,
+#                     pin_memory=True,
+#                 )
+#                 rotated_result = second_recognizer_predict(recognizer, converter, test_loader, opt2val)[0]
+#                 rotated_confidence = rotated_result[1]
+
+#                 # Display the rotated image
+#                 # cv2.imshow(f'Rotated {angle} degrees', rotated_img)
+#                 # print(f"Rotated {angle} degrees Text: {rotated_result[0]}, Confidence: {rotated_confidence}")
+#                 # cv2.waitKey(0)  # Wait for a key press to move to the next image
+#                 # cv2.destroyAllWindows()
+
+#                 if rotated_confidence > best_confidence:
+#                     best_result = rotated_result
+#                     best_confidence = rotated_confidence
+
+#             # Append the best result to results2
+#             results2.append(best_result if best_result else result)
+
+#         # 이제 results2를 result2로 설정
+#         result2 = results2
+
+#     result = []
+#     for i, zipped in enumerate(zip(coord, result1)):
+#         box, pred1 = zipped
+#         if i in low_confident_idx:
+#             pred2 = result2[low_confident_idx.index(i)]
+#             if pred1[1] > pred2[1]:
+#                 result.append((box, pred1[0], pred1[1]))
+#             else:
+#                 result.append((box, pred2[0], pred2[1]))
+#         else:
+#             result.append((box, pred1[0], pred1[1]))
+
+#     '''DEBUG'''
+#     img_with_boxes = original_img.copy()  # 원본 이미지 복사
+#     # for idx in low_confident_idx:
+#     for idx in range(len(img_list)):
+#         bbox = coord[idx]
+#         bbox = np.array(bbox).astype(int)
+#         cv2.polylines(img_with_boxes, [bbox], isClosed=True, color=(0, 0, 255), thickness=2)  # 빨간색으로 표시
+
+#     # 이미지 시각화
+#     cv2.imshow("Low Confidence Areas", img_with_boxes)
+#     cv2.waitKey(0)
+#     cv2.destroyAllWindows()
+
+#     '''DEBUG'''
+#     a=1
+
+#     return result
+
 def get_text(image_list, recognizer, converter, opt2val: dict, original_img: np.ndarray):
     imgW = opt2val["imgW"]
     imgH = opt2val["imgH"]
@@ -281,73 +416,74 @@ def get_text(image_list, recognizer, converter, opt2val: dict, original_img: np.
     ]
 
     
-    # if len(low_confident_idx) > 0:
-    #     img_list2 = [img_list[i] for i in low_confident_idx]
-    #     AlignCollate_contrast = AlignCollate(imgH, imgW, adjust_contrast)
-    #     test_data = ListDataset(img_list2)
-    #     test_loader = torch.utils.data.DataLoader(
-    #         test_data,
-    #         batch_size=batch_size,
-    #         shuffle=False,
-    #         num_workers=n_workers,
-    #         collate_fn=AlignCollate_contrast,
-    #         pin_memory=True,
-    #     )
-    #     result2 = recognizer_predict(recognizer, converter, test_loader,
-    #                                  opt2val)
-    
     if len(low_confident_idx) > 0:
         img_list2 = [img_list[i] for i in low_confident_idx]
-        results2 = []
+        AlignCollate_contrast = AlignCollate(imgH, imgW, adjust_contrast)
+        test_data = ListDataset(img_list2)
+        test_loader = torch.utils.data.DataLoader(
+            test_data,
+            batch_size=batch_size,
+            shuffle=False,
+            num_workers=n_workers,
+            collate_fn=AlignCollate_contrast,
+            pin_memory=True,
+        )
+        result2 = recognizer_predict(recognizer, converter, test_loader,
+                                     opt2val)
+    
+    # # 회전 로직 주석처리
+    # if len(low_confident_idx) > 0:
+    #     img_list2 = [img_list[i] for i in low_confident_idx]
+    #     results2 = []
 
-        for img in img_list2:
-            best_result = None
-            best_confidence = 0
+    #     for img in img_list2:
+    #         best_result = None
+    #         best_confidence = 0
 
-            # Original image OCR
-            AlignCollate_contrast = AlignCollate(imgH, imgW, adjust_contrast)
-            test_data = ListDataset([img])
-            test_loader = torch.utils.data.DataLoader(
-                test_data,
-                batch_size=1,
-                shuffle=False,
-                num_workers=n_workers,
-                collate_fn=AlignCollate_contrast,
-                pin_memory=True,
-            )
-            result = second_recognizer_predict(recognizer, converter, test_loader, opt2val)[0]
-            # print(f"Original Text: {result[0]}, Confidence: {result[1]}")
+    #         # Original image OCR
+    #         AlignCollate_contrast = AlignCollate(imgH, imgW, adjust_contrast)
+    #         test_data = ListDataset([img])
+    #         test_loader = torch.utils.data.DataLoader(
+    #             test_data,
+    #             batch_size=1,
+    #             shuffle=False,
+    #             num_workers=n_workers,
+    #             collate_fn=AlignCollate_contrast,
+    #             pin_memory=True,
+    #         )
+    #         result = second_recognizer_predict(recognizer, converter, test_loader, opt2val)[0]
+    #         # print(f"Original Text: {result[0]}, Confidence: {result[1]}")
 
-            # Compare confidence with rotation
-            for angle in [90, 270]:
-                rotated_img = rotate_image(img, angle)
-                test_data = ListDataset([rotated_img])
-                test_loader = torch.utils.data.DataLoader(
-                    test_data,
-                    batch_size=1,
-                    shuffle=False,
-                    num_workers=n_workers,
-                    collate_fn=AlignCollate_contrast,
-                    pin_memory=True,
-                )
-                rotated_result = second_recognizer_predict(recognizer, converter, test_loader, opt2val)[0]
-                rotated_confidence = rotated_result[1]
+    #         # Compare confidence with rotation
+    #         for angle in [90, 270]:
+    #             rotated_img = rotate_image(img, angle)
+    #             test_data = ListDataset([rotated_img])
+    #             test_loader = torch.utils.data.DataLoader(
+    #                 test_data,
+    #                 batch_size=1,
+    #                 shuffle=False,
+    #                 num_workers=n_workers,
+    #                 collate_fn=AlignCollate_contrast,
+    #                 pin_memory=True,
+    #             )
+    #             rotated_result = second_recognizer_predict(recognizer, converter, test_loader, opt2val)[0]
+    #             rotated_confidence = rotated_result[1]
 
-                # Display the rotated image
-                # cv2.imshow(f'Rotated {angle} degrees', rotated_img)
-                # print(f"Rotated {angle} degrees Text: {rotated_result[0]}, Confidence: {rotated_confidence}")
-                # cv2.waitKey(0)  # Wait for a key press to move to the next image
-                # cv2.destroyAllWindows()
+    #             # Display the rotated image
+    #             # cv2.imshow(f'Rotated {angle} degrees', rotated_img)
+    #             # print(f"Rotated {angle} degrees Text: {rotated_result[0]}, Confidence: {rotated_confidence}")
+    #             # cv2.waitKey(0)  # Wait for a key press to move to the next image
+    #             # cv2.destroyAllWindows()
 
-                if rotated_confidence > best_confidence:
-                    best_result = rotated_result
-                    best_confidence = rotated_confidence
+    #             if rotated_confidence > best_confidence:
+    #                 best_result = rotated_result
+    #                 best_confidence = rotated_confidence
 
-            # Append the best result to results2
-            results2.append(best_result if best_result else result)
+    #         # Append the best result to results2
+    #         results2.append(best_result if best_result else result)
 
-        # 이제 results2를 result2로 설정
-        result2 = results2
+    #     # 이제 results2를 result2로 설정
+    #     result2 = results2
 
     result = []
     for i, zipped in enumerate(zip(coord, result1)):

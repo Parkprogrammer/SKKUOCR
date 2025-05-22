@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/A_009.png",
+  "bbox": {
+    "description": "① Unit Vector\nU: Unit Vector",
+    "vertices": [
+      {
+        "x": 40,
+        "y": 249
+      },
+      {
+        "x": 202,
+        "y": 249
+      },
+      {
+        "x": 202,
+        "y": 314
+      },
+      {
+        "x": 40,
+        "y": 314
+      }
+    ]
+  },
+  "wrong_prediction": "Umit vector u; unt vector",
+  "correct_text": "① Unit Vector\nU: Unit Vector",
+  "confidence": 0.95
+}
