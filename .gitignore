@@ -2,3 +2,7 @@
 *.env
 
 ngrok_config.json
+
+*.xlsx
+
+/correction_data
