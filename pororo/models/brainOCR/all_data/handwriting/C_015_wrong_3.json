@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_015.png",
+  "bbox": {
+    "description": "buffering when arrival rate via switch exceeds output line speed\nqueueing (delay) and loss due to output port buffer overflow!",
+    "vertices": [
+      {
+        "x": 427,
+        "y": 1530
+      },
+      {
+        "x": 3474,
+        "y": 1530
+      },
+      {
+        "x": 3474,
+        "y": 1855
+      },
+      {
+        "x": 427,
+        "y": 1855
+      }
+    ]
+  },
+  "wrong_prediction": "Ibuffering when arrival rate via switch exceeds output line speed) queueing (deloy) and loss due to output port buffer overflow!",
+  "correct_text": "buffering when arrival rate via switch exceeds output line speed\nqueueing (delay) and loss due to output port buffer overflow!",
+  "confidence": 0.9
+}

@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_032.png",
+  "bbox": {
+    "description": "20bit로 할당받은 subnet을 8개의 조직에 할당\nOrganization 0\n200.23.16.0/23\nOrganization 1\n200.23.18.0/23\nOrganization 2\n200.23.20.0/23",
+    "vertices": [
+      {
+        "x": 113,
+        "y": 809
+      },
+      {
+        "x": 1218,
+        "y": 809
+      },
+      {
+        "x": 1218,
+        "y": 1434
+      },
+      {
+        "x": 113,
+        "y": 1434
+      }
+    ]
+  },
+  "wrong_prediction": "206it로 한용받은Organization 0 subnet은 8개의 200.23.16.0123 조직에 할당 Organization 1 200.23.18.0123 Organization 2 200.23.20.0123",
+  "correct_text": "20bit로 할당받은 subnet을 8개의 조직에 할당\nOrganization 0\n200.23.16.0/23\nOrganization 1\n200.23.18.0/23\nOrganization 2\n200.23.20.0/23",
+  "confidence": 0.95
+}

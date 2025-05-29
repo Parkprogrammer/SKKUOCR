@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_008.png",
+  "bbox": {
+    "description": "longest prefix match\nwhen looking for forwarding table entry for given destination address, use longest address prefix that matches destination address.",
+    "vertices": [
+      {
+        "x": 378,
+        "y": 430
+      },
+      {
+        "x": 3022,
+        "y": 430
+      },
+      {
+        "x": 3022,
+        "y": 965
+      },
+      {
+        "x": 378,
+        "y": 965
+      }
+    ]
+  },
+  "wrong_prediction": "longest prefix match when looking for forwarding table entry for given destination address, use lorgest address prefix that. matches destination address.",
+  "correct_text": "longest prefix match\nwhen looking for forwarding table entry for given destination address, use longest address prefix that matches destination address.",
+  "confidence": 0.95
+}

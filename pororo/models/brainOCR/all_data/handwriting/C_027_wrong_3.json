@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_027.png",
+  "bbox": {
+    "description": "223 1.1.2",
+    "vertices": [
+      {
+        "x": 504,
+        "y": 1035
+      },
+      {
+        "x": 761,
+        "y": 1035
+      },
+      {
+        "x": 761,
+        "y": 1098
+      },
+      {
+        "x": 504,
+        "y": 1098
+      }
+    ]
+  },
+  "wrong_prediction": "223.1.1.2",
+  "correct_text": "223 1.1.2",
+  "confidence": 0.95
+}

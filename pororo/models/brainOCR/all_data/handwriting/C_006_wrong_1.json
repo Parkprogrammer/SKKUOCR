@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_006.png",
+  "bbox": {
+    "description": "router input ports\nSoftware가 아닌 Hardware의 port",
+    "vertices": [
+      {
+        "x": 730,
+        "y": 1945
+      },
+      {
+        "x": 1905,
+        "y": 1945
+      },
+      {
+        "x": 1905,
+        "y": 2202
+      },
+      {
+        "x": 730,
+        "y": 2202
+      }
+    ]
+  },
+  "wrong_prediction": "router input ports Saftware가 아닌 Hardware 의 porL",
+  "correct_text": "router input ports\nSoftware가 아닌 Hardware의 port",
+  "confidence": 0.95
+}

@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_037.png",
+  "bbox": {
+    "description": "정확한 정보 필요, 어떤 path로 packet을 전달할거냐",
+    "vertices": [
+      {
+        "x": 2972,
+        "y": 297
+      },
+      {
+        "x": 3654,
+        "y": 297
+      },
+      {
+        "x": 3654,
+        "y": 635
+      },
+      {
+        "x": 2972,
+        "y": 635
+      }
+    ]
+  },
+  "wrong_prediction": "91lokal한 정보 필요 어떤 path도 packet를 전달할거냐",
+  "correct_text": "정확한 정보 필요, 어떤 path로 packet을 전달할거냐",
+  "confidence": 0.95
+}

@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_007.png",
+  "bbox": {
+    "description": "11001000 00010111 00010000 00000000 through",
+    "vertices": [
+      {
+        "x": 486,
+        "y": 727
+      },
+      {
+        "x": 2250,
+        "y": 727
+      },
+      {
+        "x": 2250,
+        "y": 891
+      },
+      {
+        "x": 486,
+        "y": 891
+      }
+    ]
+  },
+  "wrong_prediction": "11001000 00010111 00010000 00000000 thrnumh",
+  "correct_text": "11001000 00010111 00010000 00000000 through",
+  "confidence": 0.95
+}

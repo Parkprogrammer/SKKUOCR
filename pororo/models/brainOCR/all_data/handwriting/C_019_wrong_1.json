@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_019.png",
+  "bbox": {
+    "description": "send packet from highest priority queue that has buffered packets\n• FCFS within priority class\n→ 같은 우선순위 큐 안에서 FCFS 방식으로",
+    "vertices": [
+      {
+        "x": 441,
+        "y": 1296
+      },
+      {
+        "x": 2618,
+        "y": 1296
+      },
+      {
+        "x": 2618,
+        "y": 2014
+      },
+      {
+        "x": 441,
+        "y": 2014
+      }
+    ]
+  },
+  "wrong_prediction": "send packet from highest arrivals priority queue that has packet buffered packets in service FCFS within priority class departures L 같은 9선순위 큐 안애  FCFS 방식으로",
+  "correct_text": "send packet from highest priority queue that has buffered packets\n• FCFS within priority class\n→ 같은 우선순위 큐 안에서 FCFS 방식으로",
+  "confidence": 0.95
+}

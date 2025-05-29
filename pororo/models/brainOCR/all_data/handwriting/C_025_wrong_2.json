@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_025.png",
+  "bbox": {
+    "description": "11001000 00010111 00010000 00000000\nsubnet part             host part\n200.23.16.0/23\n앞에있는 23bit가 Subnet part로 사용된다\n1~2^9-1\n0, 2^9는 특수목적\nNetwork Layer: 4-42",
+    "vertices": [
+      {
+        "x": 1087,
+        "y": 1302
+      },
+      {
+        "x": 3900,
+        "y": 1302
+      },
+      {
+        "x": 3900,
+        "y": 2206
+      },
+      {
+        "x": 1087,
+        "y": 2206
+      }
+    ]
+  },
+  "wrong_prediction": "subnet part 11001000 00010111 00010000 D0000000 i~2'-| 200.23.16.0123 2' 는 특수옥적 앞에 있는 23 bi*가 Swbnet part로 사용된다 Network Layer: 4-42",
+  "correct_text": "11001000 00010111 00010000 00000000\nsubnet part             host part\n200.23.16.0/23\n앞에있는 23bit가 Subnet part로 사용된다\n1~2^9-1\n0, 2^9는 특수목적\nNetwork Layer: 4-42",
+  "confidence": 0.95
+}

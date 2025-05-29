@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_027.png",
+  "bbox": {
+    "description": "CP",
+    "vertices": [
+      {
+        "x": 2413,
+        "y": 1066
+      },
+      {
+        "x": 2595,
+        "y": 1066
+      },
+      {
+        "x": 2595,
+        "y": 1126
+      },
+      {
+        "x": 2413,
+        "y": 1126
+      }
+    ]
+  },
+  "wrong_prediction": "CS",
+  "correct_text": "CP",
+  "confidence": 0.85
+}

@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_003.png",
+  "bbox": {
+    "description": "Removing the ambiguity Precedence\n• Must rewrite the grammar to avoid generating the problem\n• Match each else to innermost unmatched if (common sense rule)",
+    "vertices": [
+      {
+        "x": 262,
+        "y": 445
+      },
+      {
+        "x": 2650,
+        "y": 445
+      },
+      {
+        "x": 2650,
+        "y": 787
+      },
+      {
+        "x": 262,
+        "y": 787
+      }
+    ]
+  },
+  "wrong_prediction": "Removing the ambiguity Precedence Must rewrite the grammar to avoid generating the problem Match each else to innermost unmatched if' (common sense rule)",
+  "correct_text": "Removing the ambiguity Precedence\n• Must rewrite the grammar to avoid generating the problem\n• Match each else to innermost unmatched if (common sense rule)",
+  "confidence": 0.95
+}

@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_033.png",
+  "bbox": {
+    "description": "Ip 이렇게 많이 bit는 필요한가?\n→ 필요함, Ipv4는 다씀 → 모바일, IOT\n\nQ: are there enough 32-bit IP addresses?",
+    "vertices": [
+      {
+        "x": 2292,
+        "y": 317
+      },
+      {
+        "x": 3686,
+        "y": 317
+      },
+      {
+        "x": 3686,
+        "y": 705
+      },
+      {
+        "x": 2292,
+        "y": 705
+      }
+    ]
+  },
+  "wrong_prediction": "Ip 이렇게 많이 bit 필요한가 ? 필요함 Ipv는 다씀 + 모바오, 그0 Q: are there enoughi 32-bit IP addresses?",
+  "correct_text": "Ip 이렇게 많이 bit는 필요한가?\n→ 필요함, Ipv4는 다씀 → 모바일, IOT\n\nQ: are there enough 32-bit IP addresses?",
+  "confidence": 0.95
+}

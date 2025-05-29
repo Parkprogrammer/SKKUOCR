@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_039.png",
+  "bbox": {
+    "description": "전체적으로는 전통 방식보다 복잡해질 수도",
+    "vertices": [
+      {
+        "x": 3259,
+        "y": 1794
+      },
+      {
+        "x": 3858,
+        "y": 1794
+      },
+      {
+        "x": 3858,
+        "y": 2054
+      },
+      {
+        "x": 3259,
+        "y": 2054
+      }
+    ]
+  },
+  "wrong_prediction": "진체적으로는 전통방식보* 복잡해질 수도",
+  "correct_text": "전체적으로는 전통 방식보다 복잡해질 수도",
+  "confidence": 0.95
+}

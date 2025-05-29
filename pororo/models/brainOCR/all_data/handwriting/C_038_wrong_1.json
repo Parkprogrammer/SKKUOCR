@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_038.png",
+  "bbox": {
+    "description": "Local forwarding\ntable\n\nheader   output",
+    "vertices": [
+      {
+        "x": 1147,
+        "y": 1237
+      },
+      {
+        "x": 1414,
+        "y": 1237
+      },
+      {
+        "x": 1414,
+        "y": 1368
+      },
+      {
+        "x": 1147,
+        "y": 1368
+      }
+    ]
+  },
+  "wrong_prediction": "Local forwarding table header output",
+  "correct_text": "Local forwarding\ntable\n\nheader   output",
+  "confidence": 0.9
+}

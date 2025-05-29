@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_030.png",
+  "bbox": {
+    "description": "DHCP",
+    "vertices": [
+      {
+        "x": 646,
+        "y": 1471
+      },
+      {
+        "x": 779,
+        "y": 1471
+      },
+      {
+        "x": 779,
+        "y": 1519
+      },
+      {
+        "x": 646,
+        "y": 1519
+      }
+    ]
+  },
+  "wrong_prediction": "DHCE",
+  "correct_text": "DHCP",
+  "confidence": 0.95
+}

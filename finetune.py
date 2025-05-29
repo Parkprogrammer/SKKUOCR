@@ -55,7 +55,7 @@ class GPTOCRCorrector:
     # Temporarily store bbox to send to Foundation models for fune-tuning.
     def save_cropped_images(self, cropped_images: List[np.ndarray], base_path: str) -> List[str]:
         
-        temp_dir = "temp_crops"
+        temp_dir = "temp_crops_image"
         os.makedirs(temp_dir, exist_ok=True)
         
         temp_paths = []
@@ -448,9 +448,9 @@ if __name__ == "__main__":
     
     ocr = PororoOcrWithCorrection(gpt_api_key=GPT_API_KEY)
     
-    IMAGE_PATH = "test/handwriting"
-    CORRECTION_OUTPUT_DIR = "correction_data"
-    ALL_TEXT_OUTPUT_DIR = "text_data" 
+    IMAGE_PATH = "test/image"
+    CORRECTION_OUTPUT_DIR = "correction_data/image"
+    ALL_TEXT_OUTPUT_DIR = "text_data/image" 
     
     for filename in os.listdir(IMAGE_PATH):
         if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
@@ -458,7 +458,7 @@ if __name__ == "__main__":
             print(f"Processing {filepath}...")
             
             
-            result = ocr.run_ocr_corr(filepath, debug=True, use_corr=True)
+            result = ocr.run_ocr_corr(filepath, debug=False, use_corr=True)
             print(f'Result for {filepath}: {result}')
             
             

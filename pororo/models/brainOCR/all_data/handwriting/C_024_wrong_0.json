@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_024.png",
+  "bbox": {
+    "description": "Network-layer services and protocols",
+    "vertices": [
+      {
+        "x": 337,
+        "y": 144
+      },
+      {
+        "x": 1770,
+        "y": 144
+      },
+      {
+        "x": 1770,
+        "y": 257
+      },
+      {
+        "x": 337,
+        "y": 257
+      }
+    ]
+  },
+  "wrong_prediction": "Wetworkelayer services and protocols",
+  "correct_text": "Network-layer services and protocols",
+  "confidence": 0.95
+}

@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_003.png",
+  "bbox": {
+    "description": "if Expr then WithElse else WithElse\nOtherStmt\nif Expr then Stmt\nif Expr then WithElse else NoElse",
+    "vertices": [
+      {
+        "x": 1156,
+        "y": 1086
+      },
+      {
+        "x": 2326,
+        "y": 1086
+      },
+      {
+        "x": 2326,
+        "y": 1540
+      },
+      {
+        "x": 1156,
+        "y": 1540
+      }
+    ]
+  },
+  "wrong_prediction": "if Expr then WithElse else WithElse OtherStmt i Expr then Stmt i Expr then WithElse else NoElse",
+  "correct_text": "if Expr then WithElse else WithElse\nOtherStmt\nif Expr then Stmt\nif Expr then WithElse else NoElse",
+  "confidence": 0.9
+}

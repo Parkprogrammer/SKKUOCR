@@ -6,7 +6,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.init as init
 from torchvision import models
-from torchvision.models.vgg import model_urls
+from torch.hub import load_state_dict_from_url
+
+# torchvision >= 0.13 호환용 수동 정의
+model_urls = {
+    'vgg16_bn': 'https://download.pytorch.org/models/vgg16_bn-6c64b313.pth',
+}
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

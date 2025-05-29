@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_032.png",
+  "bbox": {
+    "description": "hierarchical addressing allows efficient advertisement of routing information:",
+    "vertices": [
+      {
+        "x": 280,
+        "y": 436
+      },
+      {
+        "x": 3353,
+        "y": 436
+      },
+      {
+        "x": 3353,
+        "y": 730
+      },
+      {
+        "x": 280,
+        "y": 730
+      }
+    ]
+  },
+  "wrong_prediction": "Ihienarchical addressing allows efficient advertisement off routing information:",
+  "correct_text": "hierarchical addressing allows efficient advertisement of routing information:",
+  "confidence": 0.95
+}

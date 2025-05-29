@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_036.png",
+  "bbox": {
+    "description": "NAT router 에서 (LAN IP, Port) → (NAT IP, Port) 변환\n\n2: NAT router changes datagram source address from 10.0.0.1, 3345 to 138.76.29.7, 5001, updates table",
+    "vertices": [
+      {
+        "x": 206,
+        "y": 383
+      },
+      {
+        "x": 1311,
+        "y": 383
+      },
+      {
+        "x": 1311,
+        "y": 1070
+      },
+      {
+        "x": 206,
+        "y": 1070
+      }
+    ]
+  },
+  "wrong_prediction": "NAT router 에서 [LAN Ip, Pont) - (NAT I8,pO비) 변환 2: NAT router changes datagram source address from 10.0.0.1, 3345 to 138.76.29.7, 5001, updates table",
+  "correct_text": "NAT router 에서 (LAN IP, Port) → (NAT IP, Port) 변환\n\n2: NAT router changes datagram source address from 10.0.0.1, 3345 to 138.76.29.7, 5001, updates table",
+  "confidence": 0.95
+}

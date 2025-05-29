@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_032.png",
+  "bbox": {
+    "description": "“Send me anything with addresses beginning 200.23.16.0/20”",
+    "vertices": [
+      {
+        "x": 2150,
+        "y": 1123
+      },
+      {
+        "x": 2667,
+        "y": 1123
+      },
+      {
+        "x": 2667,
+        "y": 1409
+      },
+      {
+        "x": 2150,
+        "y": 1409
+      }
+    ]
+  },
+  "wrong_prediction": "'4 'Send me anything with addresses beginning 200.23.16.0120\"",
+  "correct_text": "“Send me anything with addresses beginning 200.23.16.0/20”",
+  "confidence": 0.95
+}

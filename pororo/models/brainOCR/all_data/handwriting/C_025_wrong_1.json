@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_025.png",
+  "bbox": {
+    "description": "CIDR: Classless InterDomain Routing (pronounced “cider”)\n• subnet portion of address of arbitrary length\n• address format: a.b.c.d/x, where x is # bits in subnet portion of address",
+    "vertices": [
+      {
+        "x": 360,
+        "y": 500
+      },
+      {
+        "x": 3825,
+        "y": 500
+      },
+      {
+        "x": 3825,
+        "y": 1125
+      },
+      {
+        "x": 360,
+        "y": 1125
+      }
+    ]
+  },
+  "wrong_prediction": "CIDR: Classless InterDomain Routing (pronounced \"rider\") subnet portion of address of arbitrary length address format: a b.c. d)v, where w is # bits in subnet portion of address",
+  "correct_text": "CIDR: Classless InterDomain Routing (pronounced “cider”)\n• subnet portion of address of arbitrary length\n• address format: a.b.c.d/x, where x is # bits in subnet portion of address",
+  "confidence": 0.98
+}

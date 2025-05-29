@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_020.png",
+  "bbox": {
+    "description": "minimum bandwidth guarantee\nRR로 throughput을 보장할 수 있는가?\n→ No\nminimum bandwidth 1/2R 하고싶은데 Queue가 제공 1/3R만 됨",
+    "vertices": [
+      {
+        "x": 2663,
+        "y": 280
+      },
+      {
+        "x": 3740,
+        "y": 280
+      },
+      {
+        "x": 3740,
+        "y": 814
+      },
+      {
+        "x": 2663,
+        "y": 814
+      }
+    ]
+  },
+  "wrong_prediction": "minimum bandwidth guarontee RR로 thrmghput을 보장할 수 있는가? No minimum bondwidth YR 하고싶온데 Queme가 해언 YR* 될",
+  "correct_text": "minimum bandwidth guarantee\nRR로 throughput을 보장할 수 있는가?\n→ No\nminimum bandwidth 1/2R 하고싶은데 Queue가 제공 1/3R만 됨",
+  "confidence": 0.95
+}

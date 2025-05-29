@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_008.png",
+  "bbox": {
+    "description": "가장 긴 Prefix bit가 같은 애의 interface를 받아옴",
+    "vertices": [
+      {
+        "x": 906,
+        "y": 1808
+      },
+      {
+        "x": 3716,
+        "y": 1808
+      },
+      {
+        "x": 3716,
+        "y": 1999
+      },
+      {
+        "x": 906,
+        "y": 1999
+      }
+    ]
+  },
+  "wrong_prediction": "가장 긴 Prefix Git가 같은 애의 interme론 끌여옹 11001000 0001011 1 00010 1 0 10100001 which interface?",
+  "correct_text": "가장 긴 Prefix bit가 같은 애의 interface를 받아옴",
+  "confidence": 0.95
+}

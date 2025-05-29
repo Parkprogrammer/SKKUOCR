@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_034.png",
+  "bbox": {
+    "description": "local network의 device들은 local network에서만 사용가능한 내부 IP 사용",
+    "vertices": [
+      {
+        "x": 1553,
+        "y": 323
+      },
+      {
+        "x": 3320,
+        "y": 323
+      },
+      {
+        "x": 3320,
+        "y": 517
+      },
+      {
+        "x": 1553,
+        "y": 517
+      }
+    ]
+  },
+  "wrong_prediction": "local networ의 device들은 |ocal netomk에서단 싸용가능한 IP 사용'",
+  "correct_text": "local network의 device들은 local network에서만 사용가능한 내부 IP 사용",
+  "confidence": 0.95
+}

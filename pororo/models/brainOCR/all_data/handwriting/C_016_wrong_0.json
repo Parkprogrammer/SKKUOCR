@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_016.png",
+  "bbox": {
+    "description": "buffer, average throughput",
+    "vertices": [
+      {
+        "x": 1682,
+        "y": 29
+      },
+      {
+        "x": 2520,
+        "y": 29
+      },
+      {
+        "x": 2520,
+        "y": 249
+      },
+      {
+        "x": 1682,
+        "y": 249
+      }
+    ]
+  },
+  "wrong_prediction": "buffer 1AA averase throm@hpnt",
+  "correct_text": "buffer, average throughput",
+  "confidence": 0.9
+}

@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_016.png",
+  "bbox": {
+    "description": "CWD",
+    "vertices": [
+      {
+        "x": 1391,
+        "y": 57
+      },
+      {
+        "x": 1558,
+        "y": 57
+      },
+      {
+        "x": 1558,
+        "y": 126
+      },
+      {
+        "x": 1391,
+        "y": 126
+      }
+    ]
+  },
+  "wrong_prediction": "CWND",
+  "correct_text": "CWD",
+  "confidence": 0.9
+}

@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_039.png",
+  "bbox": {
+    "description": "router가 해야하는 일\n단순해짐\n+연산이 없어지니깐",
+    "vertices": [
+      {
+        "x": 3203,
+        "y": 1403
+      },
+      {
+        "x": 3819,
+        "y": 1403
+      },
+      {
+        "x": 3819,
+        "y": 1734
+      },
+      {
+        "x": 3203,
+        "y": 1734
+      }
+    ]
+  },
+  "wrong_prediction": "router가 해야하는 일 단순해짐 - 연산이 없어지니깐",
+  "correct_text": "router가 해야하는 일\n단순해짐\n+연산이 없어지니깐",
+  "confidence": 0.9
+}

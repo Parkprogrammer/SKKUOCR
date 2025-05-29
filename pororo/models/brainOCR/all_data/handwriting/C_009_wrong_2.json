@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_009.png",
+  "bbox": {
+    "description": "00011***",
+    "vertices": [
+      {
+        "x": 1798,
+        "y": 1604
+      },
+      {
+        "x": 2162,
+        "y": 1604
+      },
+      {
+        "x": 2162,
+        "y": 1673
+      },
+      {
+        "x": 1798,
+        "y": 1673
+      }
+    ]
+  },
+  "wrong_prediction": "00011 + X",
+  "correct_text": "00011***",
+  "confidence": 0.95
+}

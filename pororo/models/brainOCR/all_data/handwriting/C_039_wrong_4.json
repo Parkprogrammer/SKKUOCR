@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_039.png",
+  "bbox": {
+    "description": "CA",
+    "vertices": [
+      {
+        "x": 2432,
+        "y": 1557
+      },
+      {
+        "x": 2520,
+        "y": 1557
+      },
+      {
+        "x": 2520,
+        "y": 1620
+      },
+      {
+        "x": 2432,
+        "y": 1620
+      }
+    ]
+  },
+  "wrong_prediction": "CCA'",
+  "correct_text": "CA",
+  "confidence": 0.9
+}

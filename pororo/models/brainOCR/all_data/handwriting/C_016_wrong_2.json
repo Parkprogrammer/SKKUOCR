@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_016.png",
+  "bbox": {
+    "description": "How much buffering? buffer가 클수록 좋나?",
+    "vertices": [
+      {
+        "x": 355,
+        "y": 153
+      },
+      {
+        "x": 1184,
+        "y": 153
+      },
+      {
+        "x": 1184,
+        "y": 374
+      },
+      {
+        "x": 355,
+        "y": 374
+      }
+    ]
+  },
+  "wrong_prediction": "Howmuch buffering? buffer가 큰수록 좋나?",
+  "correct_text": "How much buffering? buffer가 클수록 좋나?",
+  "confidence": 0.95
+}

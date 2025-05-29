@@ -1,0 +1,198 @@
+﻿filename,words
+C_003_wrong_0.png,"Removing the ambiguity Precedence
+• Must rewrite the grammar to avoid generating the problem
+• Match each else to innermost unmatched if (common sense rule)"
+C_003_wrong_1.png,"if Expr then WithElse else WithElse
+OtherStmt
+if Expr then Stmt
+if Expr then WithElse else NoElse"
+C_003_wrong_2.png,"3 WithElse
+4
+5 NoElse
+6"
+C_003_wrong_3.png,"Intuition: Between then and else, only WithElse can go, but NoElse cannot. With this grammar, the example has only one derivation"
+C_004_wrong_1.png,"In both cases, Expr ⇒ * id - num * id
+• The two derivations produce different parse trees
+• The parse trees imply different evaluation orders!"
+C_005_wrong_0.png,"Rule Sentential Form
+— Expr
+1 Expr Op Expr
+3 Expr Op <id,y>
+6 Expr * <id,y>
+1 Expr Op Expr * <id,y>
+2 Expr Op <num,2> * <id,y>
+5 Expr - <num,2> * <id,y>
+3 <id,x> - <num,2> * <id,y>"
+C_005_wrong_1.png,This evaluates as (x - 2) * y
+C_005_wrong_2.png,"같은 grammar지만 derivation에 따라 의미가 달라짐 → derivation을 섞어쓰면 안됨
+8"
+C_006_wrong_0.png,SUNGKYUNKWAN UNIVERSITY(SKKU)
+C_006_wrong_1.png,"router input ports
+Software가 아닌 Hardware의 port"
+C_007_wrong_0.png,"Destination-based forwarding
+SUNG KYUN KWAN UNIVERSITY(SKKU)
+destination IP 주소의 범위를 만들고, 해당하는 범위의 interface를 사용하자
+forwarding table
+Destination Address Range
+Link Interface"
+C_007_wrong_1.png,11001000 00010111 00010000 00000000 through
+C_007_wrong_2.png,11001000 00010111 00011000 11111111
+C_007_wrong_3.png,11001000 00010111 00011001 00000000 through 11001000 00010111 00011111 11111111
+C_007_wrong_4.png,"Q: but what happens if ranges don’t divide up so nicely?
+range가 예쁘게 안나뉘고 중간에 이상한 범위가 있으면 어떻게 output port를 정하지?
+Network Layer: 4-17"
+C_008_wrong_0.png,"longest prefix match
+when looking for forwarding table entry for given destination address, use longest address prefix that matches destination address."
+C_008_wrong_1.png,11001000 00010111 00010
+C_008_wrong_2.png,********
+C_008_wrong_3.png,11001000 match!
+C_008_wrong_4.png,가장 긴 Prefix bit가 같은 애의 interface를 받아옴
+C_008_wrong_5.png,11001000 0010111 00011000 10100001
+C_009_wrong_0.png,"Destination Address Range
+11001000 00010111 00010***"
+C_009_wrong_1.png,00011000
+C_009_wrong_2.png,00011***
+C_009_wrong_3.png,"match! 11001000 0001011 1 00011 interface 2도 match되지만 1이 제일 많이 match됨 which interface?
+which interface?
+Network Layer: 4-20"
+C_010_wrong_0.png,"SUNGKYUNKWAN UNIVERSITY(SKKU)
+1398"
+C_013_wrong_1.png,switch fabric
+C_014_wrong_0.png,"Output port queuing
+output queuing 많이 발생
+NR > R → queueing
+굉장히 빠름
+switch fabric (rate: NR)
+datagram buffer queueing
+link layer protocol (send)
+line termination"
+C_015_wrong_0.png,SUNGKYUNKWAN UNIVERSITY(SKKU)
+C_015_wrong_1.png,inPub 에서 fabric 임정 발라서 NR로 들어옴 delay X
+C_015_wrong_2.png,"at t, packets move from input to output"
+C_015_wrong_3.png,"buffering when arrival rate via switch exceeds output line speed
+queueing (delay) and loss due to output port buffer overflow!"
+C_016_wrong_0.png,"buffer, average throughput"
+C_016_wrong_1.png,CWD
+C_016_wrong_2.png,How much buffering? buffer가 클수록 좋나?
+C_016_wrong_3.png,SUNGKYUNKWAN UNIVERSITY(SKKU)
+C_017_wrong_1.png,"▪ marking: which packets to mark to signal congestion (ECN, RED)
+Ip layer 도움을 받아 TCP 단에서 congestion 조절
+→ random 하게 적당히 drop
+→ buffer 꽉 안차게
+Network Layer: 4-29"
+C_019_wrong_1.png,"send packet from highest priority queue that has buffered packets
+• FCFS within priority class
+→ 같은 우선순위 큐 안에서 FCFS 방식으로"
+C_020_wrong_1.png,SUNGKYUNKWAN UNIVERSITY(SKKU)
+C_020_wrong_2.png,"minimum bandwidth guarantee
+RR로 throughput을 보장할 수 있는가?
+→ No
+minimum bandwidth 1/2R 하고싶은데 Queue가 제공 1/3R만 됨"
+C_021_wrong_0.png,"Scheduling policies: weighted fair queueing
+RR은 Class 별 Queue에 동일한 기회
+RR과 달리 W₁: W₂: W₃의 기회론 줌"
+C_021_wrong_1.png,SUNGKYUNKWAN UNIVERSITY(SKKU)
+C_021_wrong_2.png,"Weighted Fair Queuing (WFQ):
+▪ generalized Round Robin
+▪ each class, i, has weight, wᵢ, and gets weighted amount of service in each cycle:
+  wᵢ/Σⱼwⱼ
+▪ minimum bandwidth guarantee (per-traffic-class)"
+C_021_wrong_3.png,W₂
+C_021_wrong_4.png,classify arrivals
+C_021_wrong_5.png,W3C
+C_022_wrong_0.png,SUNGKYUNKWAN UNIVERSITY(SKKU)
+C_022_wrong_2.png,total datagram length (bytes) fragmentation/ reassembly header checksum
+C_022_wrong_3.png,"ver head. type of
+len service"
+C_022_wrong_4.png,"length
+head. len
+type of service
+16-bit identifier
+flgs
+fragment offset
+time to live
+upper layer
+header checksum
+source IP address"
+C_023_wrong_0.png,SUNGKYUNKWAN UNIVERSITY(SKKU)
+C_023_wrong_1.png,"router 거치지 않고 접근 가능한 애들의 그룹
+What's a subnet ?
+• device interfaces that can physically reach each other
+without passing through an intervening router"
+C_023_wrong_2.png,"Ip address의 상위 bit는 Subnet 부분
+32 bit 중 남은 하위 bit는 host 부분"
+C_024_wrong_0.png,Network-layer services and protocols
+C_024_wrong_1.png,SUNGKYUNKWAN UNIVERSITY(SKKU) 1398
+C_025_wrong_0.png,SUNGKYUNKWAN UNIVERSITY(SKKU) 1398
+C_025_wrong_1.png,"CIDR: Classless InterDomain Routing (pronounced “cider”)
+• subnet portion of address of arbitrary length
+• address format: a.b.c.d/x, where x is # bits in subnet portion of address"
+C_025_wrong_2.png,"11001000 00010111 00010000 00000000
+subnet part             host part
+200.23.16.0/23
+앞에있는 23bit가 Subnet part로 사용된다
+1~2^9-1
+0, 2^9는 특수목적
+Network Layer: 4-42"
+C_026_wrong_0.png,SUNGKYUNKWAN UNIVERSITY(SKKU)
+C_027_wrong_0.png,SUNGKYUNKWAN UNIVERSITY(SKKU)
+C_027_wrong_1.png,"보통 DHCP 서버 subnet 안에 안 둠 broadcast는 subnet 밖으로 못 나가서 Typically, DHCP server will be co-located in router, serving all subnets to which router is attached"
+C_027_wrong_2.png,223.1 2.5
+C_027_wrong_3.png,223 1.1.2
+C_027_wrong_4.png,CP
+C_028_wrong_0.png,Broadcast destination이 정해져있진 않지만 listen하는 모두에게 SUNG KYUN KWAN UNIVERSITY(SKKU) 1398
+C_029_wrong_0.png,"DHCP: more than IP addresses
+BroadCAST: Subnet 안에서 통신"
+C_030_wrong_1.png,DHCP
+C_030_wrong_2.png,DHCP
+C_030_wrong_3.png,DHCP
+C_031_wrong_0.png,SUNGKYUNKWAN UNIVERSITY(SKKU)
+C_032_wrong_0.png,Hierarchical addressing: route aggregation
+C_032_wrong_1.png,hierarchical addressing allows efficient advertisement of routing information:
+C_032_wrong_2.png,"20bit로 할당받은 subnet을 8개의 조직에 할당
+Organization 0
+200.23.16.0/23
+Organization 1
+200.23.18.0/23
+Organization 2
+200.23.20.0/23"
+C_032_wrong_3.png,“Send me anything with addresses beginning 200.23.16.0/20”
+C_032_wrong_4.png,Internet
+C_032_wrong_5.png,"longest prefix match
+2obit match를 이용"
+C_032_wrong_6.png,Organization 7 : 200.23.30.0/23
+C_032_wrong_7.png,“Send me anything with addresses beginning 199.31.0.0/16”
+C_032_wrong_8.png,ISPs-R-Us
+C_033_wrong_0.png,"Ip 이렇게 많이 bit는 필요한가?
+→ 필요함, Ipv4는 다씀 → 모바일, IOT
+
+Q: are there enough 32-bit IP addresses?"
+C_034_wrong_0.png,NAT: network address translation
+C_034_wrong_1.png,local network의 device들은 local network에서만 사용가능한 내부 IP 사용
+C_035_wrong_0.png,NAT: network address translation
+C_035_wrong_1.png,SUNGKYUNKWAN UNIVERSITY(SKKU)
+C_036_wrong_0.png,NAT: network address translation
+C_036_wrong_1.png,SUNGKYUNKWAN UNIVERSITY(SKKU)
+C_036_wrong_2.png,"NAT router 에서 (LAN IP, Port) → (NAT IP, Port) 변환
+
+2: NAT router changes datagram source address from 10.0.0.1, 3345 to 138.76.29.7, 5001, updates table"
+C_036_wrong_3.png,"S: 10.0.0.1, 3345
+D: 128.119.40.186, 80"
+C_036_wrong_4.png,"4. router 에서 (NAT IP, port) → (LAN IP, port)"
+C_036_wrong_5.png,"3: reply arrives, destination address: 138.76.29.7, 5001"
+C_037_wrong_0.png,"Network layer: data plane, control plane"
+C_037_wrong_1.png,"정확한 정보 필요, 어떤 path로 packet을 전달할거냐"
+C_038_wrong_0.png,"Individual routing algorithm components in each and every router interact in the control plane.
+routing algorithm에 따라 각 router마다 존재하는 forwarding table 작성"
+C_038_wrong_1.png,"Local forwarding
+table
+
+header   output"
+C_039_wrong_0.png,Software-Defined Networking (SDN) control plane
+C_039_wrong_1.png,SUNGKYUNKWAN UNIVERSITY(SKKU) 1398
+C_039_wrong_3.png,"router가 해야하는 일
+단순해짐
++연산이 없어지니깐"
+C_039_wrong_4.png,CA
+C_039_wrong_5.png,CA
+C_039_wrong_6.png,전체적으로는 전통 방식보다 복잡해질 수도

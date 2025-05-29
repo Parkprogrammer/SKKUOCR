@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_027.png",
+  "bbox": {
+    "description": "보통 DHCP 서버 subnet 안에 안 둠 broadcast는 subnet 밖으로 못 나가서 Typically, DHCP server will be co-located in router, serving all subnets to which router is attached",
+    "vertices": [
+      {
+        "x": 2360,
+        "y": 272
+      },
+      {
+        "x": 3849,
+        "y": 272
+      },
+      {
+        "x": 3849,
+        "y": 851
+      },
+      {
+        "x": 2360,
+        "y": 851
+      }
+    ]
+  },
+  "wrong_prediction": "보통 DH(P 서버 subnet 안에 안 등D Groadcast는 SWbnet 밖으로 모내셔 Typically, DHCP server will be Co- located in router, serving all subnets to which router is attached",
+  "correct_text": "보통 DHCP 서버 subnet 안에 안 둠 broadcast는 subnet 밖으로 못 나가서 Typically, DHCP server will be co-located in router, serving all subnets to which router is attached",
+  "confidence": 0.95
+}

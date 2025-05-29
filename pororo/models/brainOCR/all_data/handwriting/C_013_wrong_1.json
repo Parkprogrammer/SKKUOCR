@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_013.png",
+  "bbox": {
+    "description": "switch fabric",
+    "vertices": [
+      {
+        "x": 1222,
+        "y": 1548
+      },
+      {
+        "x": 1445,
+        "y": 1548
+      },
+      {
+        "x": 1445,
+        "y": 1699
+      },
+      {
+        "x": 1222,
+        "y": 1699
+      }
+    ]
+  },
+  "wrong_prediction": "switctv fabrid",
+  "correct_text": "switch fabric",
+  "confidence": 0.95
+}

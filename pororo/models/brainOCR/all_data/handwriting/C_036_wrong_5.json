@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_036.png",
+  "bbox": {
+    "description": "3: reply arrives, destination address: 138.76.29.7, 5001",
+    "vertices": [
+      {
+        "x": 1053,
+        "y": 1795
+      },
+      {
+        "x": 2001,
+        "y": 1795
+      },
+      {
+        "x": 2001,
+        "y": 1962
+      },
+      {
+        "x": 1053,
+        "y": 1962
+      }
+    ]
+  },
+  "wrong_prediction": "3: reply arrives, destinatipn address: 138.76.29.7, 5001",
+  "correct_text": "3: reply arrives, destination address: 138.76.29.7, 5001",
+  "confidence": 0.95
+}

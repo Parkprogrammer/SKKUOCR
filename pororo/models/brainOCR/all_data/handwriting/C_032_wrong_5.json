@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_032.png",
+  "bbox": {
+    "description": "longest prefix match\n2obit match를 이용",
+    "vertices": [
+      {
+        "x": 1998,
+        "y": 1487
+      },
+      {
+        "x": 2596,
+        "y": 1487
+      },
+      {
+        "x": 2596,
+        "y": 1669
+      },
+      {
+        "x": 1998,
+        "y": 1669
+      }
+    ]
+  },
+  "wrong_prediction": "longest prefix muth 2obit match국 이동",
+  "correct_text": "longest prefix match\n2obit match를 이용",
+  "confidence": 0.95
+}

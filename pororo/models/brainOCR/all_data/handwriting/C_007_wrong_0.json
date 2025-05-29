@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_007.png",
+  "bbox": {
+    "description": "Destination-based forwarding\nSUNG KYUN KWAN UNIVERSITY(SKKU)\ndestination IP 주소의 범위를 만들고, 해당하는 범위의 interface를 사용하자\nforwarding table\nDestination Address Range\nLink Interface",
+    "vertices": [
+      {
+        "x": 366,
+        "y": 147
+      },
+      {
+        "x": 3741,
+        "y": 147
+      },
+      {
+        "x": 3741,
+        "y": 666
+      },
+      {
+        "x": 366,
+        "y": 666
+      }
+    ]
+  },
+  "wrong_prediction": "Destination-based forwarding SUNG KYUN KWAN UNIVERSITY(SKKU) destination IP 주소의 범위를 만든고, 해당하는 '범위의 interfnce를 사용하자 forwarding table Destination Address Range Link Interface",
+  "correct_text": "Destination-based forwarding\nSUNG KYUN KWAN UNIVERSITY(SKKU)\ndestination IP 주소의 범위를 만들고, 해당하는 범위의 interface를 사용하자\nforwarding table\nDestination Address Range\nLink Interface",
+  "confidence": 0.95
+}

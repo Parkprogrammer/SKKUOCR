@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_032.png",
+  "bbox": {
+    "description": "ISPs-R-Us",
+    "vertices": [
+      {
+        "x": 1629,
+        "y": 1773
+      },
+      {
+        "x": 1920,
+        "y": 1773
+      },
+      {
+        "x": 1920,
+        "y": 1839
+      },
+      {
+        "x": 1629,
+        "y": 1839
+      }
+    ]
+  },
+  "wrong_prediction": "ISPSR-US",
+  "correct_text": "ISPs-R-Us",
+  "confidence": 0.95
+}

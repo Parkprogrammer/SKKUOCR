@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_005.png",
+  "bbox": {
+    "description": "같은 grammar지만 derivation에 따라 의미가 달라짐 → derivation을 섞어쓰면 안됨\n8",
+    "vertices": [
+      {
+        "x": 1496,
+        "y": 1715
+      },
+      {
+        "x": 2722,
+        "y": 1715
+      },
+      {
+        "x": 2722,
+        "y": 2176
+      },
+      {
+        "x": 1496,
+        "y": 2176
+      }
+    ]
+  },
+  "wrong_prediction": "같은 gramm 싸지만 의 미가 달라짐 deri vation에 따라 derivation을 섞어쓰면 안됨 8",
+  "correct_text": "같은 grammar지만 derivation에 따라 의미가 달라짐 → derivation을 섞어쓰면 안됨\n8",
+  "confidence": 0.95
+}

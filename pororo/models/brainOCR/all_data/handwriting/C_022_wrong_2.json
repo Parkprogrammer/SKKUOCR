@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_022.png",
+  "bbox": {
+    "description": "total datagram length (bytes) fragmentation/ reassembly header checksum",
+    "vertices": [
+      {
+        "x": 2895,
+        "y": 563
+      },
+      {
+        "x": 3641,
+        "y": 563
+      },
+      {
+        "x": 3641,
+        "y": 1066
+      },
+      {
+        "x": 2895,
+        "y": 1066
+      }
+    ]
+  },
+  "wrong_prediction": "total datagram length (bytes) fragmentationl reassembly overhead header checksum",
+  "correct_text": "total datagram length (bytes) fragmentation/ reassembly header checksum",
+  "confidence": 0.95
+}

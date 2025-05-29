@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_009.png",
+  "bbox": {
+    "description": "Destination Address Range\n11001000 00010111 00010***",
+    "vertices": [
+      {
+        "x": 903,
+        "y": 1188
+      },
+      {
+        "x": 2168,
+        "y": 1188
+      },
+      {
+        "x": 2168,
+        "y": 1406
+      },
+      {
+        "x": 903,
+        "y": 1406
+      }
+    ]
+  },
+  "wrong_prediction": "Destination Address Range 11001000 0001 011 1 00010 * * *",
+  "correct_text": "Destination Address Range\n11001000 00010111 00010***",
+  "confidence": 0.95
+}

@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_039.png",
+  "bbox": {
+    "description": "Software-Defined Networking (SDN) control plane",
+    "vertices": [
+      {
+        "x": 330,
+        "y": 140
+      },
+      {
+        "x": 2259,
+        "y": 140
+      },
+      {
+        "x": 2259,
+        "y": 265
+      },
+      {
+        "x": 330,
+        "y": 265
+      }
+    ]
+  },
+  "wrong_prediction": "Sotware-Deined Netwarking (SDN] control plame",
+  "correct_text": "Software-Defined Networking (SDN) control plane",
+  "confidence": 0.95
+}

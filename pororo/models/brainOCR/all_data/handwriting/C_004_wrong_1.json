@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_004.png",
+  "bbox": {
+    "description": "In both cases, Expr ⇒ * id - num * id\n• The two derivations produce different parse trees\n• The parse trees imply different evaluation orders!",
+    "vertices": [
+      {
+        "x": 255,
+        "y": 1701
+      },
+      {
+        "x": 2230,
+        "y": 1701
+      },
+      {
+        "x": 2230,
+        "y": 2034
+      },
+      {
+        "x": 255,
+        "y": 2034
+      }
+    ]
+  },
+  "wrong_prediction": "In both cases, Expr * id num id The two derivations produce different parse trees The parse trees imply different evaluation orders!",
+  "correct_text": "In both cases, Expr ⇒ * id - num * id\n• The two derivations produce different parse trees\n• The parse trees imply different evaluation orders!",
+  "confidence": 0.98
+}

@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_022.png",
+  "bbox": {
+    "description": "length\nhead. len\ntype of service\n16-bit identifier\nflgs\nfragment offset\ntime to live\nupper layer\nheader checksum\nsource IP address",
+    "vertices": [
+      {
+        "x": 1519,
+        "y": 645
+      },
+      {
+        "x": 2688,
+        "y": 645
+      },
+      {
+        "x": 2688,
+        "y": 1224
+      },
+      {
+        "x": 1519,
+        "y": 1224
+      }
+    ]
+  },
+  "wrong_prediction": "length fragment 16-bit identifier 4gs ofset time to upper header live layer checksum source IP address",
+  "correct_text": "length\nhead. len\ntype of service\n16-bit identifier\nflgs\nfragment offset\ntime to live\nupper layer\nheader checksum\nsource IP address",
+  "confidence": 0.95
+}

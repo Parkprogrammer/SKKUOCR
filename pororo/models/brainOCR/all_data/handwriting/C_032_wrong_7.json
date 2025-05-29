@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_032.png",
+  "bbox": {
+    "description": "“Send me anything with addresses beginning 199.31.0.0/16”",
+    "vertices": [
+      {
+        "x": 2189,
+        "y": 1730
+      },
+      {
+        "x": 2707,
+        "y": 1730
+      },
+      {
+        "x": 2707,
+        "y": 2018
+      },
+      {
+        "x": 2189,
+        "y": 2018
+      }
+    ]
+  },
+  "wrong_prediction": "\"Send me anything with addresses beginning 199.31.0.0116\"",
+  "correct_text": "“Send me anything with addresses beginning 199.31.0.0/16”",
+  "confidence": 0.98
+}

@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_021.png",
+  "bbox": {
+    "description": "Scheduling policies: weighted fair queueing\nRR은 Class 별 Queue에 동일한 기회\nRR과 달리 W₁: W₂: W₃의 기회론 줌",
+    "vertices": [
+      {
+        "x": 349,
+        "y": 144
+      },
+      {
+        "x": 2035,
+        "y": 144
+      },
+      {
+        "x": 2035,
+        "y": 471
+      },
+      {
+        "x": 349,
+        "y": 471
+      }
+    ]
+  },
+  "wrong_prediction": "Scheduling policies: weighted fair queueing RR는 Class 별 Cueue에 동보핀 기회 RR과 달리 W, : W : W,의 기화론 종",
+  "correct_text": "Scheduling policies: weighted fair queueing\nRR은 Class 별 Queue에 동일한 기회\nRR과 달리 W₁: W₂: W₃의 기회론 줌",
+  "confidence": 0.95
+}

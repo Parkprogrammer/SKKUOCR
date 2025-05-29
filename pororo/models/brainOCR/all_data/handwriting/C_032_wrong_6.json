@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_032.png",
+  "bbox": {
+    "description": "Organization 7 : 200.23.30.0/23",
+    "vertices": [
+      {
+        "x": 632,
+        "y": 1521
+      },
+      {
+        "x": 1181,
+        "y": 1521
+      },
+      {
+        "x": 1181,
+        "y": 1702
+      },
+      {
+        "x": 632,
+        "y": 1702
+      }
+    ]
+  },
+  "wrong_prediction": "Organization > 200.23.30.0123",
+  "correct_text": "Organization 7 : 200.23.30.0/23",
+  "confidence": 0.95
+}

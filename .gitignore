@@ -5,6 +5,9 @@ ngrok_config.json
 
 *.xlsx
 
-./correction_data
-
+correction_data
 ./text_data
+
+text_data
+
+test

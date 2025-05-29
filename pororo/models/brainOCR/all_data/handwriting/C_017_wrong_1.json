@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_017.png",
+  "bbox": {
+    "description": "▪ marking: which packets to mark to signal congestion (ECN, RED)\nIp layer 도움을 받아 TCP 단에서 congestion 조절\n→ random 하게 적당히 drop\n→ buffer 꽉 안차게\nNetwork Layer: 4-29",
+    "vertices": [
+      {
+        "x": 1896,
+        "y": 1455
+      },
+      {
+        "x": 3900,
+        "y": 1455
+      },
+      {
+        "x": 3900,
+        "y": 2206
+      },
+      {
+        "x": 1896,
+        "y": 2206
+      }
+    ]
+  },
+  "wrong_prediction": "marking:; which packets to mark to signal congestion (ECN, RED) Ip lay 도움을 받아 ㄴ; 5adom 하게 적당히 {r~p TCp 단에서 Cogestion 조절 buer 꽉 안차거( Network Layer: 4-29",
+  "correct_text": "▪ marking: which packets to mark to signal congestion (ECN, RED)\nIp layer 도움을 받아 TCP 단에서 congestion 조절\n→ random 하게 적당히 drop\n→ buffer 꽉 안차게\nNetwork Layer: 4-29",
+  "confidence": 0.95
+}

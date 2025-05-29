@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_038.png",
+  "bbox": {
+    "description": "Individual routing algorithm components in each and every router interact in the control plane.\nrouting algorithm에 따라 각 router마다 존재하는 forwarding table 작성",
+    "vertices": [
+      {
+        "x": 271,
+        "y": 390
+      },
+      {
+        "x": 3898,
+        "y": 390
+      },
+      {
+        "x": 3898,
+        "y": 1171
+      },
+      {
+        "x": 271,
+        "y": 1171
+      }
+    ]
+  },
+  "wrong_prediction": "Individual nouting algorithm components in each and ewery nowter interact in the control plane routing aloorihm에 따라 각 rovber마다 존재하는 forwarding {사e 작선 Routing Algorithm control plane",
+  "correct_text": "Individual routing algorithm components in each and every router interact in the control plane.\nrouting algorithm에 따라 각 router마다 존재하는 forwarding table 작성",
+  "confidence": 0.95
+}

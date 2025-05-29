@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_003.png",
+  "bbox": {
+    "description": "Intuition: Between then and else, only WithElse can go, but NoElse cannot. With this grammar, the example has only one derivation",
+    "vertices": [
+      {
+        "x": 299,
+        "y": 1665
+      },
+      {
+        "x": 2609,
+        "y": 1665
+      },
+      {
+        "x": 2609,
+        "y": 1978
+      },
+      {
+        "x": 299,
+        "y": 1978
+      }
+    ]
+  },
+  "wrong_prediction": "Intuition: BBetween then and else, only WithElse con go, but NoElse commot. With this grammar, the example has only one derivation",
+  "correct_text": "Intuition: Between then and else, only WithElse can go, but NoElse cannot. With this grammar, the example has only one derivation",
+  "confidence": 0.95
+}

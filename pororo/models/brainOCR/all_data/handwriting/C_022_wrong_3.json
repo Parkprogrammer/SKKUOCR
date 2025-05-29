@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_022.png",
+  "bbox": {
+    "description": "ver head. type of\nlen service",
+    "vertices": [
+      {
+        "x": 1495,
+        "y": 592
+      },
+      {
+        "x": 2106,
+        "y": 592
+      },
+      {
+        "x": 2106,
+        "y": 759
+      },
+      {
+        "x": 1495,
+        "y": 759
+      }
+    ]
+  },
+  "wrong_prediction": "ver head.type of Jen service",
+  "correct_text": "ver head. type of\nlen service",
+  "confidence": 0.95
+}

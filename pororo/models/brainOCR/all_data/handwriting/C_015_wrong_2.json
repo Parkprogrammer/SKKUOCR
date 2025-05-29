@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_015.png",
+  "bbox": {
+    "description": "at t, packets move from input to output",
+    "vertices": [
+      {
+        "x": 1048,
+        "y": 1261
+      },
+      {
+        "x": 1717,
+        "y": 1261
+      },
+      {
+        "x": 1717,
+        "y": 1462
+      },
+      {
+        "x": 1048,
+        "y": 1462
+      }
+    ]
+  },
+  "wrong_prediction": "at t, packets more from input to output",
+  "correct_text": "at t, packets move from input to output",
+  "confidence": 0.95
+}

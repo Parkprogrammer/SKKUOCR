@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_014.png",
+  "bbox": {
+    "description": "Output port queuing\noutput queuing 많이 발생\nNR > R → queueing\n굉장히 빠름\nswitch fabric (rate: NR)\ndatagram buffer queueing\nlink layer protocol (send)\nline termination",
+    "vertices": [
+      {
+        "x": 346,
+        "y": 22
+      },
+      {
+        "x": 2324,
+        "y": 22
+      },
+      {
+        "x": 2324,
+        "y": 918
+      },
+      {
+        "x": 346,
+        "y": 918
+      }
+    ]
+  },
+  "wrong_prediction": "output Output port queuing queuing 많이 발생 NR> R Cueueing 굉장히 른 datagram switch buffer link fabric layer line protocol termination rate:(NR' queueing (send)",
+  "correct_text": "Output port queuing\noutput queuing 많이 발생\nNR > R → queueing\n굉장히 빠름\nswitch fabric (rate: NR)\ndatagram buffer queueing\nlink layer protocol (send)\nline termination",
+  "confidence": 0.95
+}

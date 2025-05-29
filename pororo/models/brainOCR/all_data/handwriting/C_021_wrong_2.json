@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_021.png",
+  "bbox": {
+    "description": "Weighted Fair Queuing (WFQ):\n▪ generalized Round Robin\n▪ each class, i, has weight, wᵢ, and gets weighted amount of service in each cycle:\n  wᵢ/Σⱼwⱼ\n▪ minimum bandwidth guarantee (per-traffic-class)",
+    "vertices": [
+      {
+        "x": 334,
+        "y": 571
+      },
+      {
+        "x": 2012,
+        "y": 571
+      },
+      {
+        "x": 2012,
+        "y": 1999
+      },
+      {
+        "x": 334,
+        "y": 1999
+      }
+    ]
+  },
+  "wrong_prediction": "Weighted Fair Queuing (WFQ): generalized Round Robin each class, i has weight, Wv and gets weighted amount of service in each cycle: W; 'W; minimum bandwidth guarantee (per-traffic-class)",
+  "correct_text": "Weighted Fair Queuing (WFQ):\n▪ generalized Round Robin\n▪ each class, i, has weight, wᵢ, and gets weighted amount of service in each cycle:\n  wᵢ/Σⱼwⱼ\n▪ minimum bandwidth guarantee (per-traffic-class)",
+  "confidence": 0.95
+}

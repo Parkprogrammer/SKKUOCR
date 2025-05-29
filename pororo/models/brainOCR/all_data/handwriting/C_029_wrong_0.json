@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_029.png",
+  "bbox": {
+    "description": "DHCP: more than IP addresses\nBroadCAST: Subnet 안에서 통신",
+    "vertices": [
+      {
+        "x": 351,
+        "y": 155
+      },
+      {
+        "x": 1519,
+        "y": 155
+      },
+      {
+        "x": 1519,
+        "y": 332
+      },
+      {
+        "x": 351,
+        "y": 332
+      }
+    ]
+  },
+  "wrong_prediction": "DHCP: more than IP addresses Broad(ast Subnet 안에서 통신",
+  "correct_text": "DHCP: more than IP addresses\nBroadCAST: Subnet 안에서 통신",
+  "confidence": 0.95
+}

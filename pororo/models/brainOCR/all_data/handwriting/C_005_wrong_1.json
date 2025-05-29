@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_005.png",
+  "bbox": {
+    "description": "This evaluates as (x - 2) * y",
+    "vertices": [
+      {
+        "x": 309,
+        "y": 1685
+      },
+      {
+        "x": 1383,
+        "y": 1685
+      },
+      {
+        "x": 1383,
+        "y": 1793
+      },
+      {
+        "x": 309,
+        "y": 1793
+      }
+    ]
+  },
+  "wrong_prediction": "This evaluates as (x-2)*y",
+  "correct_text": "This evaluates as (x - 2) * y",
+  "confidence": 0.95
+}

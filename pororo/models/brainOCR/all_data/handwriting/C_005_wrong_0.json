@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_005.png",
+  "bbox": {
+    "description": "Rule Sentential Form\n— Expr\n1 Expr Op Expr\n3 Expr Op <id,y>\n6 Expr * <id,y>\n1 Expr Op Expr * <id,y>\n2 Expr Op <num,2> * <id,y>\n5 Expr - <num,2> * <id,y>\n3 <id,x> - <num,2> * <id,y>",
+    "vertices": [
+      {
+        "x": 330,
+        "y": 644
+      },
+      {
+        "x": 1291,
+        "y": 644
+      },
+      {
+        "x": 1291,
+        "y": 1542
+      },
+      {
+        "x": 330,
+        "y": 1542
+      }
+    ]
+  },
+  "wrong_prediction": "Rule Sentential Form Expr Expr Op Expr ~ Expr Op <idy' Expr * <idY' 67~ Expr Op Expr <id.y' Expr Op <num르 * <id,y' 5 Expr <num,르> * <id.y' 3 <id, <num,르> + <id,Y'",
+  "correct_text": "Rule Sentential Form\n— Expr\n1 Expr Op Expr\n3 Expr Op <id,y>\n6 Expr * <id,y>\n1 Expr Op Expr * <id,y>\n2 Expr Op <num,2> * <id,y>\n5 Expr - <num,2> * <id,y>\n3 <id,x> - <num,2> * <id,y>",
+  "confidence": 0.95
+}

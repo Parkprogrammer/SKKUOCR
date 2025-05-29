@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_037.png",
+  "bbox": {
+    "description": "Network layer: data plane, control plane",
+    "vertices": [
+      {
+        "x": 325,
+        "y": 145
+      },
+      {
+        "x": 1886,
+        "y": 145
+      },
+      {
+        "x": 1886,
+        "y": 259
+      },
+      {
+        "x": 325,
+        "y": 259
+      }
+    ]
+  },
+  "wrong_prediction": "Network layer; data plane, comtrol plane",
+  "correct_text": "Network layer: data plane, control plane",
+  "confidence": 0.95
+}

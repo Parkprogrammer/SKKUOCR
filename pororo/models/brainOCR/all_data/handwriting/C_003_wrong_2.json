@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_003.png",
+  "bbox": {
+    "description": "3 WithElse\n4\n5 NoElse\n6",
+    "vertices": [
+      {
+        "x": 537,
+        "y": 1090
+      },
+      {
+        "x": 981,
+        "y": 1090
+      },
+      {
+        "x": 981,
+        "y": 1541
+      },
+      {
+        "x": 537,
+        "y": 1541
+      }
+    ]
+  },
+  "wrong_prediction": "3 WithElse A5% NoElse",
+  "correct_text": "3 WithElse\n4\n5 NoElse\n6",
+  "confidence": 0.9
+}

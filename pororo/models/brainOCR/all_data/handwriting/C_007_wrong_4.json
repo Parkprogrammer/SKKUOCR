@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_007.png",
+  "bbox": {
+    "description": "Q: but what happens if ranges don’t divide up so nicely?\nrange가 예쁘게 안나뉘고 중간에 이상한 범위가 있으면 어떻게 output port를 정하지?\nNetwork Layer: 4-17",
+    "vertices": [
+      {
+        "x": 415,
+        "y": 1900
+      },
+      {
+        "x": 3900,
+        "y": 1900
+      },
+      {
+        "x": 3900,
+        "y": 2212
+      },
+      {
+        "x": 415,
+        "y": 2212
+      }
+    ]
+  },
+  "wrong_prediction": "range가 예 쁘게 안나누고 중간에 이상칸 범위가' 있을 먼 대떻게 (: but what happens if ranges don't divide up so micely?' port를 정하지' (. output Network Layer: 4-17",
+  "correct_text": "Q: but what happens if ranges don’t divide up so nicely?\nrange가 예쁘게 안나뉘고 중간에 이상한 범위가 있으면 어떻게 output port를 정하지?\nNetwork Layer: 4-17",
+  "confidence": 0.95
+}

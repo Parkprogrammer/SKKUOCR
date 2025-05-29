@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_015.png",
+  "bbox": {
+    "description": "inPub 에서 fabric 임정 발라서 NR로 들어옴 delay X",
+    "vertices": [
+      {
+        "x": 936,
+        "y": 330
+      },
+      {
+        "x": 1858,
+        "y": 330
+      },
+      {
+        "x": 1858,
+        "y": 527
+      },
+      {
+        "x": 936,
+        "y": 527
+      }
+    ]
+  },
+  "wrong_prediction": "inpu빠 에서 fabric 엄점 빨각너 NR로들어옴 dejayx",
+  "correct_text": "inPub 에서 fabric 임정 발라서 NR로 들어옴 delay X",
+  "confidence": 0.95
+}

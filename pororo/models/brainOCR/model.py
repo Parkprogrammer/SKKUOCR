@@ -6,13 +6,13 @@ https://github.com/clovaai/deep-text-recognition-benchmark/blob/master/model.py
 import torch.nn as nn
 from torch import Tensor
 
-from .modules.feature_extraction import (
+from modules.feature_extraction import (
     ResNetFeatureExtractor,
     VGGFeatureExtractor,
 )
-from .modules.prediction import Attention
-from .modules.sequence_modeling import BidirectionalLSTM
-from .modules.transformation import TpsSpatialTransformerNetwork
+from modules.prediction import Attention
+from modules.sequence_modeling import BidirectionalLSTM
+from modules.transformation import TpsSpatialTransformerNetwork
 
 
 class Model(nn.Module):
@@ -29,6 +29,7 @@ class Model(nn.Module):
         imgW = opt2val["imgW"]
         FeatureExtraction = opt2val["FeatureExtraction"]
         Transformation = opt2val["Transformation"]
+        self.Transformation = opt2val["Transformation"]
         SequenceModeling = opt2val["SequenceModeling"]
         Prediction = opt2val["Prediction"]
 
@@ -45,14 +46,14 @@ class Model(nn.Module):
 
         # FeatureExtraction
         if FeatureExtraction == "VGG":
-            extractor = VGGFeatureExtractor
+            extractor = VGGFeatureExtractor(input_channel,output_channel,opt2val)
         else:  # ResNet
             extractor = ResNetFeatureExtractor
-        self.FeatureExtraction = extractor(
-            input_channel,
-            output_channel,
-            opt2val,
-        )
+        self.FeatureExtraction = extractor
+        # self.FeatureExtraction = extractor(
+        #     input_channel,
+        #     output_channel,
+        # )
         self.FeatureExtraction_output = output_channel  # int(imgH/16-1) * 512
         self.AdaptiveAvgPool = nn.AdaptiveAvgPool2d(
             (None, 1))  # Transform final (imgH/16-1) -> 1
@@ -89,7 +90,7 @@ class Model(nn.Module):
         else:
             raise Exception("Prediction is neither CTC or Attn")
 
-    def forward(self, x: Tensor):
+    def forward(self, x: Tensor, text=None, length=None):
         """
         :param x: (batch, input_channel, height, width)
         :return:

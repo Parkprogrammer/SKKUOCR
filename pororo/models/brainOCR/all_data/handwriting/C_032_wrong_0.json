@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_032.png",
+  "bbox": {
+    "description": "Hierarchical addressing: route aggregation",
+    "vertices": [
+      {
+        "x": 342,
+        "y": 141
+      },
+      {
+        "x": 1995,
+        "y": 141
+      },
+      {
+        "x": 1995,
+        "y": 277
+      },
+      {
+        "x": 342,
+        "y": 277
+      }
+    ]
+  },
+  "wrong_prediction": "Hierarchicall addressing: route aggregatiom",
+  "correct_text": "Hierarchical addressing: route aggregation",
+  "confidence": 0.95
+}

@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_009.png",
+  "bbox": {
+    "description": "match! 11001000 0001011 1 00011 interface 2도 match되지만 1이 제일 많이 match됨 which interface?\nwhich interface?\nNetwork Layer: 4-20",
+    "vertices": [
+      {
+        "x": 903,
+        "y": 1838
+      },
+      {
+        "x": 3900,
+        "y": 1838
+      },
+      {
+        "x": 3900,
+        "y": 2206
+      },
+      {
+        "x": 903,
+        "y": 2206
+      }
+    ]
+  },
+  "wrong_prediction": "match! 11001000 U U U+1 1 00010110 101 0000.1 which interface? interAce 2도 match되지만 1이 제일 많이 mat됨 11001000 0001011 1 00011000 10101010 which interface? Network Layer: 4-20",
+  "correct_text": "match! 11001000 0001011 1 00011 interface 2도 match되지만 1이 제일 많이 match됨 which interface?\nwhich interface?\nNetwork Layer: 4-20",
+  "confidence": 0.85
+}

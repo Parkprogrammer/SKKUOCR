@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_027.png",
+  "bbox": {
+    "description": "SUNGKYUNKWAN UNIVERSITY(SKKU)",
+    "vertices": [
+      {
+        "x": 3289,
+        "y": 155
+      },
+      {
+        "x": 3741,
+        "y": 155
+      },
+      {
+        "x": 3741,
+        "y": 250
+      },
+      {
+        "x": 3289,
+        "y": 250
+      }
+    ]
+  },
+  "wrong_prediction": "SUNG KYUN KWAN 1398 UNIVERSITY(SKKU)",
+  "correct_text": "SUNGKYUNKWAN UNIVERSITY(SKKU)",
+  "confidence": 0.98
+}

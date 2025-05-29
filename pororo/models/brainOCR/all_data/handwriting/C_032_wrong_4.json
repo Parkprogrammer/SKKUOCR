@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_032.png",
+  "bbox": {
+    "description": "Internet",
+    "vertices": [
+      {
+        "x": 2807,
+        "y": 1470
+      },
+      {
+        "x": 3023,
+        "y": 1470
+      },
+      {
+        "x": 3023,
+        "y": 1533
+      },
+      {
+        "x": 2807,
+        "y": 1533
+      }
+    ]
+  },
+  "wrong_prediction": "Intemet",
+  "correct_text": "Internet",
+  "confidence": 0.95
+}

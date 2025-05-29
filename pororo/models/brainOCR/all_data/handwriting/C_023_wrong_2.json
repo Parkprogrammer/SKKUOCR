@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_023.png",
+  "bbox": {
+    "description": "Ip address의 상위 bit는 Subnet 부분\n32 bit 중 남은 하위 bit는 host 부분",
+    "vertices": [
+      {
+        "x": 732,
+        "y": 1870
+      },
+      {
+        "x": 1976,
+        "y": 1870
+      },
+      {
+        "x": 1976,
+        "y": 2115
+      },
+      {
+        "x": 732,
+        "y": 2115
+      }
+    ]
+  },
+  "wrong_prediction": "address 외 상위 bit는 Subnet 부분 Ip 3 6{ 중 남은 하위 bit는 host 부분",
+  "correct_text": "Ip address의 상위 bit는 Subnet 부분\n32 bit 중 남은 하위 bit는 host 부분",
+  "confidence": 0.95
+}

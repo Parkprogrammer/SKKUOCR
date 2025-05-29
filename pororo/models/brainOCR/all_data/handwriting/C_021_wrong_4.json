@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_021.png",
+  "bbox": {
+    "description": "classify arrivals",
+    "vertices": [
+      {
+        "x": 2179,
+        "y": 1501
+      },
+      {
+        "x": 2456,
+        "y": 1501
+      },
+      {
+        "x": 2456,
+        "y": 1666
+      },
+      {
+        "x": 2179,
+        "y": 1666
+      }
+    ]
+  },
+  "wrong_prediction": "classify arrivali's",
+  "correct_text": "classify arrivals",
+  "confidence": 0.95
+}

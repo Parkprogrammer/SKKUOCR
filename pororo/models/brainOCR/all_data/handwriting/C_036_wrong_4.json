@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_036.png",
+  "bbox": {
+    "description": "4. router 에서 (NAT IP, port) → (LAN IP, port)",
+    "vertices": [
+      {
+        "x": 2186,
+        "y": 1780
+      },
+      {
+        "x": 3261,
+        "y": 1780
+      },
+      {
+        "x": 3261,
+        "y": 2048
+      },
+      {
+        "x": 2186,
+        "y": 2048
+      }
+    ]
+  },
+  "wrong_prediction": "rowter 에서 (NAT IP, Pot) (lANI, prt)",
+  "correct_text": "4. router 에서 (NAT IP, port) → (LAN IP, port)",
+  "confidence": 0.95
+}

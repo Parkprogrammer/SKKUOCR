@@ -1,0 +1,27 @@
+{
+  "original_image": "test/handwriting/C_036.png",
+  "bbox": {
+    "description": "NAT: network address translation",
+    "vertices": [
+      {
+        "x": 361,
+        "y": 155
+      },
+      {
+        "x": 1644,
+        "y": 155
+      },
+      {
+        "x": 1644,
+        "y": 247
+      },
+      {
+        "x": 361,
+        "y": 247
+      }
+    ]
+  },
+  "wrong_prediction": "NAT: metwork address translation",
+  "correct_text": "NAT: network address translation",
+  "confidence": 0.95
+}
