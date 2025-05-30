@@ -1,27 +1,27 @@
 {
-  "original_image": "test/handwriting/A_000.png",
+  "original_image": "test/notice/A_000.png",
   "bbox": {
-    "description": "Convexity",
+    "description": "대학교육혁신센터(02-740-1675, to2smile@skku.edu)",
     "vertices": [
       {
-        "x": 26,
-        "y": 499
+        "x": 199,
+        "y": 931
       },
       {
-        "x": 148,
-        "y": 499
+        "x": 453,
+        "y": 931
       },
       {
-        "x": 148,
-        "y": 556
+        "x": 453,
+        "y": 947
       },
       {
-        "x": 26,
-        "y": 556
+        "x": 199,
+        "y": 947
       }
     ]
   },
-  "wrong_prediction": "Conven'g",
-  "correct_text": "Convexity",
+  "wrong_prediction": "대학교육혁신센터(02-740-1675, to2smile@skikcwedu)",
+  "correct_text": "대학교육혁신센터(02-740-1675, to2smile@skku.edu)",
   "confidence": 0.95
 }

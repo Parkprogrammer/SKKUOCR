@@ -6,13 +6,21 @@ https://github.com/clovaai/deep-text-recognition-benchmark/blob/master/model.py
 import torch.nn as nn
 from torch import Tensor
 
-from .modules.feature_extraction import (
+# from .modules.feature_extraction import (
+#     ResNetFeatureExtractor,
+#     VGGFeatureExtractor,
+# )
+# from .modules.prediction import Attention
+# from .modules.sequence_modeling import BidirectionalLSTM
+# from .modules.transformation import TpsSpatialTransformerNetwork
+
+from pororo.models.brainOCR.modules.feature_extraction import (
     ResNetFeatureExtractor,
     VGGFeatureExtractor,
 )
-from .modules.prediction import Attention
-from .modules.sequence_modeling import BidirectionalLSTM
-from .modules.transformation import TpsSpatialTransformerNetwork
+from pororo.models.brainOCR.modules.prediction import Attention
+from pororo.models.brainOCR.modules.sequence_modeling import BidirectionalLSTM
+from pororo.models.brainOCR.modules.transformation import TpsSpatialTransformerNetwork
 
 
 class Model(nn.Module):
@@ -53,6 +61,9 @@ class Model(nn.Module):
             output_channel,
             opt2val,
         )
+        
+        # self.FeatureExtraction = extractor(input_channel, output_channel)
+
         self.FeatureExtraction_output = output_channel  # int(imgH/16-1) * 512
         self.AdaptiveAvgPool = nn.AdaptiveAvgPool2d(
             (None, 1))  # Transform final (imgH/16-1) -> 1
@@ -105,7 +116,9 @@ class Model(nn.Module):
         visual_feature = visual_feature.squeeze(3)  # (b, w, channel=512)
 
         # Sequence modeling stage
-        self.SequenceModeling.eval()
+        # FIXME: Too slow in inference! must divide!!!!!
+        # self.SequenceModeling.eval()
+        
         contextual_feature = self.SequenceModeling(visual_feature)
 
         # Prediction stage

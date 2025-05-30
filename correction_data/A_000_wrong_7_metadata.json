@@ -1,7 +1,7 @@
 {
   "original_image": "test/handwriting/A_000.png",
   "bbox": {
-    "description": "f(λ∗)",
+    "description": "f(λ*)",
     "vertices": [
       {
         "x": 60,
@@ -22,6 +22,6 @@
     ]
   },
   "wrong_prediction": "f[제)",
-  "correct_text": "f(λ∗)",
-  "confidence": 0.95
+  "correct_text": "f(λ*)",
+  "confidence": 0.9
 }

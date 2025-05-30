@@ -111,8 +111,8 @@ if __name__ == "__main__":
     
     
     for filename in os.listdir(IMAGE_PATH):
-        # filepath = os.path.join(IMAGE_PATH,filename)
-        filepath = "test/handwriting/C_008.png"
+        filepath = os.path.join(IMAGE_PATH,filename)
+        filepath = "test/image/C_002.png"
         
         # if filepath.lower().endswith(('.png', '.jpg', '.jpeg')):
         print(f"Processing {filepath}...")

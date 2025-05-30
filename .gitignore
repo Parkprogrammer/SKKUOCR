@@ -5,6 +5,13 @@ ngrok_config.json
 
 *.xlsx
 
-./correction_data
 
-./text_data
+text_data/
+
+train/
+test/
+tmp_crops/
+test_data/
+
+correction_data/
+finetune_results/

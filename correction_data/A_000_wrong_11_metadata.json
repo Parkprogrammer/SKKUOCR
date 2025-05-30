@@ -1,7 +1,7 @@
 {
   "original_image": "test/handwriting/A_000.png",
   "bbox": {
-    "description": "≤ 〈\\frac{1}{\\rho}(\\lambda_{k+1} - \\lambda_{k}), \\lambda_{k+1}\\rangle",
+    "description": "≯ < 1/ρ (λ_kt+1 - λ_k), λ_t+1 >",
     "vertices": [
       {
         "x": 420,
@@ -22,6 +22,6 @@
     ]
   },
   "wrong_prediction": "스' < 음 (3- ~ 北r) jh)",
-  "correct_text": "≤ 〈\\frac{1}{\\rho}(\\lambda_{k+1} - \\lambda_{k}), \\lambda_{k+1}\\rangle",
-  "confidence": 0.9
+  "correct_text": "≯ < 1/ρ (λ_kt+1 - λ_k), λ_t+1 >",
+  "confidence": 0.95
 }

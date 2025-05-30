@@ -1,7 +1,7 @@
 {
   "original_image": "test/handwriting/A_000.png",
   "bbox": {
-    "description": "x_{k+1} - x_* / A^T λ_*",
+    "description": "χ(_{k+1} - λ_*, A^T λ_*)",
     "vertices": [
       {
         "x": 499,
@@ -22,6 +22,6 @@
     ]
   },
   "wrong_prediction": "지대-)* A)x )",
-  "correct_text": "x_{k+1} - x_* / A^T λ_*",
+  "correct_text": "χ(_{k+1} - λ_*, A^T λ_*)",
   "confidence": 0.95
 }

@@ -1,7 +1,7 @@
 {
   "original_image": "test/handwriting/A_009.png",
   "bbox": {
-    "description": "ⓒ Standard basis for V₃\n𝑖 ≡ <1.0.0>, 𝑗 ≡ <0.1.0>, 𝑘 ≡ <0.0.1>\n𝑈 = <𝑥,𝑦,𝑧> ⇒ 𝑈 = 𝑥<1.0.0> + 𝑦<0.1.0> + 𝑧<0.0.1>\n= 𝑥𝑖 + 𝑦𝑗 + 𝑧𝑘.",
+    "description": "© Standard basis for V₃\ni ≡ <1,0,0>, j ≡ <0,1,0>, k ≡ <0,0,1>\nU = <x,y,z> ⇒ U = x<1,0,0> + y<0,1,0> + z<0,0,1>\n= xi + yj + zk.",
     "vertices": [
       {
         "x": 38,
@@ -22,6 +22,6 @@
     ]
   },
   "wrong_prediction": "Standard bosis Sor Va ia <1.0.0) j* <o.1.0> Re (0.0.1> U=<그.y.조) = |&=X<1.a.0> + 심(0.1.0> +근<0.0.1} =** + 님; * 근kR",
-  "correct_text": "ⓒ Standard basis for V₃\n𝑖 ≡ <1.0.0>, 𝑗 ≡ <0.1.0>, 𝑘 ≡ <0.0.1>\n𝑈 = <𝑥,𝑦,𝑧> ⇒ 𝑈 = 𝑥<1.0.0> + 𝑦<0.1.0> + 𝑧<0.0.1>\n= 𝑥𝑖 + 𝑦𝑗 + 𝑧𝑘.",
+  "correct_text": "© Standard basis for V₃\ni ≡ <1,0,0>, j ≡ <0,1,0>, k ≡ <0,0,1>\nU = <x,y,z> ⇒ U = x<1,0,0> + y<0,1,0> + z<0,0,1>\n= xi + yj + zk.",
   "confidence": 0.95
 }

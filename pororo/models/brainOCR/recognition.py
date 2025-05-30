@@ -218,7 +218,7 @@ def get_recognizer(opt2val: dict):
 
         state_dict = _sync_tensor_name(state_dict)
 
-    recognizer.load_state_dict(state_dict)
+    recognizer.load_state_dict(state_dict)   
 
     return recognizer, converter
 
@@ -506,9 +506,9 @@ def get_text(image_list, recognizer, converter, opt2val: dict, original_img: np.
         cv2.polylines(img_with_boxes, [bbox], isClosed=True, color=(0, 0, 255), thickness=2)  # 빨간색으로 표시
 
     # 이미지 시각화
-    cv2.imshow("Low Confidence Areas", img_with_boxes)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.imshow("Low Confidence Areas", img_with_boxes)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
     '''DEBUG'''
     a=1

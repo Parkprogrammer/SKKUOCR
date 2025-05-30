@@ -1,7 +1,7 @@
 {
   "original_image": "test/handwriting/A_000.png",
   "bbox": {
-    "description": "(λCH - λk, λxk - λkH)",
+    "description": "(λₘₑₙ − λₖ, λₙ − λₖₕ) \n __________ \n -a",
     "vertices": [
       {
         "x": 526,
@@ -22,6 +22,6 @@
     ]
   },
   "wrong_prediction": "(1* 1) 民x - )) -",
-  "correct_text": "(λCH - λk, λxk - λkH)",
-  "confidence": 0.8
+  "correct_text": "(λₘₑₙ − λₖ, λₙ − λₖₕ) \n __________ \n -a",
+  "confidence": 0.95
 }

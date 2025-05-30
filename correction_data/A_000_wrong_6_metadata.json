@@ -1,27 +1,27 @@
 {
-  "original_image": "test/handwriting/A_000.png",
+  "original_image": "test/notice/A_000.png",
   "bbox": {
-    "description": "(x_{k+1} - x_*) \\nabla f(x_*) \\leq f(x_{k+1})",
+    "description": "성균관대학교 대학교육혁신센터 Center for Innovative Higher Education",
     "vertices": [
       {
-        "x": 206,
-        "y": 579
+        "x": 407,
+        "y": 1003
       },
       {
-        "x": 630,
-        "y": 579
+        "x": 527,
+        "y": 1003
       },
       {
-        "x": 630,
-        "y": 638
+        "x": 527,
+        "y": 1030
       },
       {
-        "x": 206,
-        "y": 638
+        "x": 407,
+        "y": 1030
       }
     ]
   },
-  "wrong_prediction": "[m- 2) Df(4) = f[지 )",
-  "correct_text": "(x_{k+1} - x_*) \\nabla f(x_*) \\leq f(x_{k+1})",
-  "confidence": 0.9
+  "wrong_prediction": "대학교육혁신센터 Center tor Innovative Higher Es.omtion",
+  "correct_text": "성균관대학교 대학교육혁신센터 Center for Innovative Higher Education",
+  "confidence": 0.95
 }

@@ -1,7 +1,7 @@
 {
   "original_image": "test/handwriting/A_000.png",
   "bbox": {
-    "description": "Ch. 1.0)",
+    "description": "Cb.1o)",
     "vertices": [
       {
         "x": 45,
@@ -22,6 +22,6 @@
     ]
   },
   "wrong_prediction": "Ch.1%)",
-  "correct_text": "Ch. 1.0)",
-  "confidence": 0.95
+  "correct_text": "Cb.1o)",
+  "confidence": 0.9
 }

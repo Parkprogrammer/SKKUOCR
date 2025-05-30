@@ -268,8 +268,16 @@ class PororoOcrWithCorrection:
             
             
             base_name = os.path.splitext(os.path.basename(self.img_path))[0]
-            correct_text = wrong_pred['correct_text'].replace('/', '_').replace('\\', '_')
-            filename = f"{base_name}_wrong_{i}_{correct_text}.png"
+            
+            
+            # correct_text = wrong_pred['correct_text'].replace('/', '_').replace('\\', '_')
+            correct_text = wrong_pred['correct_text']
+            if isinstance(correct_text, list):
+                correct_text = ' '.join(str(item) for item in correct_text)
+                
+            safe_text = correct_text.replace('/', '_').replace('\\', '_')
+            
+            filename = f"{base_name}_wrong_{i}_{safe_text}.png"
             
             cv2.imwrite(os.path.join(output_dir, filename), cropped)
             
@@ -318,7 +326,7 @@ class PororoOcrWithCorrection:
             
             roi_img = put_text(roi_img, text, pts[0][0], pts[0][1] - 20, font_size=15)
 
-        plt_imshow(["Original", "OCR with Corrections"], [img, roi_img], figsize=(16, 10))
+        # plt_imshow(["Original", "OCR with Corrections"], [img, roi_img], figsize=(16, 10))
 
     @staticmethod
     def get_available_langs():
@@ -328,12 +336,13 @@ class PororoOcrWithCorrection:
     def get_available_models():
         return SUPPORTED_TASKS["ocr"].get_available_models()
     
-    def save_all_text_data(self, output_dir: str, save_images=False):
+    def save_all_text_data(self, output_dir: str, prefix: str = "",save_images=False):
         """
         OCR로 인식된 모든 텍스트(올바른 것과 수정된 것 모두)를 저장합니다.
         
         Args:
             output_dir: 저장할 디렉토리 경로
+            prefix: 파일명 앞에 붙일 접두어 (예: 'train/image/')
             save_images: 이미지도 함께 저장할지 여부 (기본값: False)
         """
         if not self.ocr_result or not self.ocr_result.get('bounding_poly'):
@@ -343,6 +352,15 @@ class PororoOcrWithCorrection:
         os.makedirs(output_dir, exist_ok=True)
         
         base_name = os.path.splitext(os.path.basename(self.img_path))[0]
+        
+        if prefix:
+            save_dir = os.path.join(output_dir, prefix)
+            os.makedirs(save_dir, exist_ok=True)
+        else:
+            save_dir = output_dir      
+        
+        # prefixed_base_name = f"{prefix}{base_name}" if prefix else base_name
+        
         all_data = []
         
         for i, text_result in enumerate(self.ocr_result['bounding_poly']):
@@ -405,8 +423,8 @@ class PororoOcrWithCorrection:
                 cv2.imwrite(output_path, cropped)
         
         
-        all_data_filename = f"{base_name}_all_text_data.json"
-        json_path = os.path.join(output_dir, all_data_filename)
+        all_data_filename = f"{base_name}_label.json"
+        json_path = os.path.join(save_dir, all_data_filename)
         
         with open(json_path, 'w', encoding='utf-8') as f:
             json.dump(all_data, f, ensure_ascii=False, indent=2)
@@ -414,8 +432,8 @@ class PororoOcrWithCorrection:
         print(f"{len(all_data)} text data saved in {json_path}.")
         
         
-        txt_filename = f"{base_name}_all_text_data.txt"
-        txt_path = os.path.join(output_dir, txt_filename)
+        txt_filename = f"{base_name}_label.txt"
+        txt_path = os.path.join(save_dir, txt_filename)
         
         with open(txt_path, 'w', encoding='utf-8') as f:
             f.write(f"Image file: {self.img_path}\n")
@@ -448,31 +466,48 @@ if __name__ == "__main__":
     
     ocr = PororoOcrWithCorrection(gpt_api_key=GPT_API_KEY)
     
-    IMAGE_PATH = "test/handwriting"
+    # IMAGE_PATH = "test/handwriting"
+    BASE_IMAGE_PATH = "test"
     CORRECTION_OUTPUT_DIR = "correction_data"
-    ALL_TEXT_OUTPUT_DIR = "text_data" 
+    ALL_TEXT_OUTPUT_DIR = "text_data"
     
-    for filename in os.listdir(IMAGE_PATH):
-        if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
-            filepath = os.path.join(IMAGE_PATH, filename)
-            print(f"Processing {filepath}...")
+    # datasets = ["train", "test"]
+    datasets = ["test"]
+    categories = ["handwriting", "image", "notice"]
+    
+    for dataset in datasets:
+        for category in categories:
+            
+            current_dir = os.path.join(dataset, category)
             
             
-            result = ocr.run_ocr_corr(filepath, debug=True, use_corr=True)
-            print(f'Result for {filepath}: {result}')
+            if not os.path.exists(current_dir):
+                print(f"No such Directory: {current_dir}")
+                continue
+                
+            print(f"\n===== Processing: {current_dir} =====\n")
             
+            # ex. "train/image/"
+            prefix = f"{dataset}/{category}/"
             
-            ocr.save_correction_data_for_finetuning(CORRECTION_OUTPUT_DIR)
-            
-            ocr.save_all_text_data(ALL_TEXT_OUTPUT_DIR)
-            
-            
-            wrong_predictions = ocr.get_wrong_predictions()
-            if wrong_predictions:
-                print(f"Found Error in {len(wrong_predictions)} bbox")
-                for wp in wrong_predictions:
-                    print(f"  '{wp['wrong_text']}' -> '{wp['correct_text']}'")
-            else:
-                print("0,0 error")
-            
-            print("-" * 50)  
+            for filename in os.listdir(current_dir):
+                if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
+                    filepath = os.path.join(current_dir, filename)
+                    print(f"Processing {filepath}...")
+                    
+                    result = ocr.run_ocr_corr(filepath, debug=True, use_corr=True)
+                    print(f'Result for {filepath}: {result}')
+                    
+                    ocr.save_correction_data_for_finetuning(CORRECTION_OUTPUT_DIR)
+                    
+                    ocr.save_all_text_data(ALL_TEXT_OUTPUT_DIR, prefix=prefix)
+                    
+                    wrong_predictions = ocr.get_wrong_predictions()
+                    if wrong_predictions:
+                        print(f"Found Error in {len(wrong_predictions)} bbox")
+                        for wp in wrong_predictions:
+                            print(f"  '{wp['wrong_text']}' -> '{wp['correct_text']}'")
+                    else:
+                        print("0,0 error")
+                    
+                    print("-" * 50)

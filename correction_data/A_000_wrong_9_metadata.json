@@ -1,7 +1,7 @@
 {
   "original_image": "test/handwriting/A_000.png",
   "bbox": {
-    "description": "f(x_k) - f(x_{k+1}) ≤",
+    "description": "f(x_k) − f(x_k+1) ⊒",
     "vertices": [
       {
         "x": 129,
@@ -22,6 +22,6 @@
     ]
   },
   "wrong_prediction": "f(x ) ㅡ (ㅈ재) 느",
-  "correct_text": "f(x_k) - f(x_{k+1}) ≤",
-  "confidence": 0.95
+  "correct_text": "f(x_k) − f(x_k+1) ⊒",
+  "confidence": 0.9
 }

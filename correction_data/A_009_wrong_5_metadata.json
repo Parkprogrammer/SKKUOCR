@@ -1,7 +1,7 @@
 {
   "original_image": "test/handwriting/A_009.png",
   "bbox": {
-    "description": "◎ Property of vectors\na, b, c ∈ Vn , α, β ∈ ℝ\n1. a + b = b + a\n2. a + (b + c) = (a + b) + c\n3. a + 0 = a\n4. a + (-a) = 0\n5. α(a + b) = αa + αb\n6. (α + β)a = αa + βa\n7. (αβ)a = α(βa)\n8. 1a = a",
+    "description": "◇ Property of vectors\na, b, c ∈ Vn , α, β ∈ ℝ\n\n1. a + b = b + a\n2. a + (b + c) = (a + b) + c\n3. a + 0 = a\n4. a + (-a) = 0\n5. α(a + b) = αa + αb\n6. (α + β) a = αa + βa\n7. (αβ) a = α(βa)\n8. 1a = a",
     "vertices": [
       {
         "x": 30,
@@ -22,6 +22,6 @@
     ]
   },
   "wrong_prediction": "Popesty 'S vectorS a.b.C eV a.BeR (. a+b=bta 2. a+(b+c) (a*b)tc 3. a+0 =a 4. a*(-이1=0 5. a(a+b) da+<b 6 (a+81a= aat Ba 7, (d)a 여(Ba) 8- 1a=a",
-  "correct_text": "◎ Property of vectors\na, b, c ∈ Vn , α, β ∈ ℝ\n1. a + b = b + a\n2. a + (b + c) = (a + b) + c\n3. a + 0 = a\n4. a + (-a) = 0\n5. α(a + b) = αa + αb\n6. (α + β)a = αa + βa\n7. (αβ)a = α(βa)\n8. 1a = a",
-  "confidence": 0.98
+  "correct_text": "◇ Property of vectors\na, b, c ∈ Vn , α, β ∈ ℝ\n\n1. a + b = b + a\n2. a + (b + c) = (a + b) + c\n3. a + 0 = a\n4. a + (-a) = 0\n5. α(a + b) = αa + αb\n6. (α + β) a = αa + βa\n7. (αβ) a = α(βa)\n8. 1a = a",
+  "confidence": 0.95
 }
