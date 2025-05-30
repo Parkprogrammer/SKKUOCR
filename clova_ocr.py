@@ -87,6 +87,72 @@ def extract_text_from_response(response_data):
             'total_texts': len(extracted_texts) # + len(table_data)
         }
 
+def get_center_y(bbox):
+    ys = [p["y"] for p in bbox]
+    return sum(ys) / len(ys)
+
+def group_lines_by_y(bbox_items, threshold=15):
+    lines = []
+    for item in sorted(bbox_items, key=lambda x: get_center_y(x["bbox"])):
+        cy = get_center_y(item["bbox"])
+        added = False
+        for line in lines:
+            avg_cy = sum(get_center_y(w["bbox"]) for w in line) / len(line)
+            if abs(cy - avg_cy) < threshold:
+                line.append(item)
+                added = True
+                break
+        if not added:
+            lines.append([item])
+    return lines
+
+def split_line_by_x(line, gap_threshold=40):
+    sorted_line = sorted(line, key=lambda item: min(p["x"] for p in item["bbox"]))
+    groups = []
+    current_group = [sorted_line[0]]
+    for prev, curr in zip(sorted_line[:-1], sorted_line[1:]):
+        prev_x = max(p["x"] for p in prev["bbox"])
+        curr_x = min(p["x"] for p in curr["bbox"])
+        gap = curr_x - prev_x
+        if gap > gap_threshold:
+            groups.append(current_group)
+            current_group = [curr]
+        else:
+            current_group.append(curr)
+    groups.append(current_group)
+    return groups
+
+def calculate_bbox(group):
+    xs = [p["x"] for item in group for p in item["bbox"]]
+    ys = [p["y"] for item in group for p in item["bbox"]]
+    x_min, x_max = min(xs), max(xs)
+    y_min, y_max = min(ys), max(ys)
+    return x_min, x_max, y_min, y_max 
+
+def post_process(data):
+    lines = group_lines_by_y(data, threshold=15) # group boxes with threshold_y=15 in pixel
+
+    merged_sentences = []
+    for line in lines:
+        sentence_groups = split_line_by_x(line, gap_threshold=40) # split with threshold_x=40 in pixel
+        for group in sentence_groups:
+            merged_text = " ".join(item["text"] for item in group)
+            avg_conf = sum(item["confidence"] for item in group) / len(group) # use avg confidence score 
+            x_min, x_max, y_min, y_max = calculate_bbox(group)
+            merged_bbox = [
+                {"x": x_min, "y": y_min},
+                {"x": x_max, "y": y_min},
+                {"x": x_max, "y": y_max},
+                {"x": x_min, "y": y_max},
+            ]
+            merged_sentences.append({
+                "text": merged_text,
+                "confidence": round(avg_conf, 4),
+                "bbox": merged_bbox
+            })
+
+    return {"texts": merged_sentences, "total_texts": len(merged_sentences)}
+
 def main():
 
     import os
@@ -98,6 +164,8 @@ def main():
     SECRET_KEY = os.getenv('SECRET_KEY')   
 
     IMAGE_PATH = "test/handwriting/A_005.jpg"
+    filename = os.path.basename(IMAGE_PATH)             
+    file_id = os.path.splitext(filename)[0]     
 
     print("CLOVA OCR API 호출 중...")
 
@@ -122,8 +190,13 @@ def main():
         #        for i, item in enumerate(extracted['tables'], 1):
         #            print(f"{i}. {item['text']} (행:{item['row']}, 열:{item['col']}, 신뢰도: {item['confidence']:.3f})")
             
-            with open('clova_ocr_result.json', 'w', encoding='utf-8') as f:
+            with open(f'clova_ocr_result_{file_id}.json', 'w', encoding='utf-8') as f:
                 json.dump(extracted, f, ensure_ascii=False, indent=2)
+
+            # merge words into a sentence
+            merged_output = post_process(extracted["texts"])
+            with open(f'clova_ocr_result_{file_id}_merged.json', 'w', encoding='utf-8') as f:
+                json.dump(merged_output, f, ensure_ascii=False, indent=2)
             
             print("\n결과가 clova_ocr_result.json에 저장되었습니다.")
         
