@@ -1,3 +1,4 @@
+import argparse
 import requests
 import json
 import base64
@@ -153,19 +154,22 @@ def post_process(data):
 
     return {"texts": merged_sentences, "total_texts": len(merged_sentences)}
 
-def main():
+def main(args):
 
     import os
     from dotenv import load_dotenv
 
     load_dotenv()
+    file_id = os.path.splitext(args.file_name)[0]
 
     API_URL = os.getenv('API_URL')   
     SECRET_KEY = os.getenv('SECRET_KEY')   
 
-    IMAGE_PATH = "test/handwriting/A_005.jpg"
-    filename = os.path.basename(IMAGE_PATH)             
-    file_id = os.path.splitext(filename)[0]     
+    IMAGE_PATH = os.path.join(args.input_dir, args.input_type, args.file_name)
+    OUTPUT_PATH = os.path.join(args.output_dir, args.input_type, f"{file_id}.json")
+    os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
+
+    # IMAGE_PATH = "test/handwriting/A_005.jpg"
 
     print("CLOVA OCR API 호출 중...")
 
@@ -175,30 +179,28 @@ def main():
         
         extracted = extract_text_from_response(result)
 
-        print(extracted)
+        # print(extracted)
         
         if extracted:
-            print(f"총 {extracted['total_texts']}개 텍스트 발견")
-            
-            
-            print("\n일반 텍스트:")
-            for i, item in enumerate(extracted['texts'], 1):
-                print(f"{i}. {item['text']} (신뢰도: {item['confidence']:.3f})")
-            
+            # print(f"총 {extracted['total_texts']}개 텍스트 발견")
+            # print("\n일반 텍스트:")
+            # for i, item in enumerate(extracted['texts'], 1):
+            #     print(f"{i}. {item['text']} (신뢰도: {item['confidence']:.3f})")
         #    if extracted['tables']:
         #        print("\n테이블 텍스트:")
         #        for i, item in enumerate(extracted['tables'], 1):
         #            print(f"{i}. {item['text']} (행:{item['row']}, 열:{item['col']}, 신뢰도: {item['confidence']:.3f})")
-            
-            with open(f'clova_ocr_result_{file_id}.json', 'w', encoding='utf-8') as f:
+
+            # save raw data
+            with open(os.path.join(os.path.dirname(OUTPUT_PATH), f"{file_id}_raw.json"), 'w', encoding='utf-8') as f:
                 json.dump(extracted, f, ensure_ascii=False, indent=2)
 
             # merge words into a sentence
             merged_output = post_process(extracted["texts"])
-            with open(f'clova_ocr_result_{file_id}_merged.json', 'w', encoding='utf-8') as f:
+            with open(OUTPUT_PATH, 'w', encoding='utf-8') as f:
                 json.dump(merged_output, f, ensure_ascii=False, indent=2)
             
-            print("\n결과가 clova_ocr_result.json에 저장되었습니다.")
+            print(f"\n결과가 {OUTPUT_PATH}에 저장되었습니다.")
         
         else:
             print("텍스트 추출 실패")
@@ -207,4 +209,11 @@ def main():
         print("API 호출 실패")
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Clova OCR API")
+    parser.add_argument("--input_dir", type=str, default="test")
+    parser.add_argument("--input_type", type=str, default="handwriting")
+    parser.add_argument("--file_name", type=str, default="A_005.jpg")
+    parser.add_argument("--output_dir", type=str, default="test_CLOVA")
+    
+    args = parser.parse_args() 
+    main(args)
