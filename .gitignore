@@ -10,8 +10,12 @@ text_data/
 
 train/
 test/
+
 tmp_crops/
 test_data/
+temp/
 
 correction_data/
+correction_data_a/
+
 finetune_results/

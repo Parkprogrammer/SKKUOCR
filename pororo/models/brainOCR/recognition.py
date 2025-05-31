@@ -430,61 +430,7 @@ def get_text(image_list, recognizer, converter, opt2val: dict, original_img: np.
         )
         result2 = recognizer_predict(recognizer, converter, test_loader,
                                      opt2val)
-    
-    # # 회전 로직 주석처리
-    # if len(low_confident_idx) > 0:
-    #     img_list2 = [img_list[i] for i in low_confident_idx]
-    #     results2 = []
-
-    #     for img in img_list2:
-    #         best_result = None
-    #         best_confidence = 0
-
-    #         # Original image OCR
-    #         AlignCollate_contrast = AlignCollate(imgH, imgW, adjust_contrast)
-    #         test_data = ListDataset([img])
-    #         test_loader = torch.utils.data.DataLoader(
-    #             test_data,
-    #             batch_size=1,
-    #             shuffle=False,
-    #             num_workers=n_workers,
-    #             collate_fn=AlignCollate_contrast,
-    #             pin_memory=True,
-    #         )
-    #         result = second_recognizer_predict(recognizer, converter, test_loader, opt2val)[0]
-    #         # print(f"Original Text: {result[0]}, Confidence: {result[1]}")
-
-    #         # Compare confidence with rotation
-    #         for angle in [90, 270]:
-    #             rotated_img = rotate_image(img, angle)
-    #             test_data = ListDataset([rotated_img])
-    #             test_loader = torch.utils.data.DataLoader(
-    #                 test_data,
-    #                 batch_size=1,
-    #                 shuffle=False,
-    #                 num_workers=n_workers,
-    #                 collate_fn=AlignCollate_contrast,
-    #                 pin_memory=True,
-    #             )
-    #             rotated_result = second_recognizer_predict(recognizer, converter, test_loader, opt2val)[0]
-    #             rotated_confidence = rotated_result[1]
-
-    #             # Display the rotated image
-    #             # cv2.imshow(f'Rotated {angle} degrees', rotated_img)
-    #             # print(f"Rotated {angle} degrees Text: {rotated_result[0]}, Confidence: {rotated_confidence}")
-    #             # cv2.waitKey(0)  # Wait for a key press to move to the next image
-    #             # cv2.destroyAllWindows()
-
-    #             if rotated_confidence > best_confidence:
-    #                 best_result = rotated_result
-    #                 best_confidence = rotated_confidence
-
-    #         # Append the best result to results2
-    #         results2.append(best_result if best_result else result)
-
-    #     # 이제 results2를 result2로 설정
-    #     result2 = results2
-
+   
     result = []
     for i, zipped in enumerate(zip(coord, result1)):
         box, pred1 = zipped
