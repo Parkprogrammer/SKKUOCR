@@ -1,0 +1,21 @@
+✓ Saved ckpt → assets/finetuned_brainocr.pt
+✓ Saved opt  → assets/finetuned_opt.txt
+GT: Selection
+PR: Selection
+CONF:0.468  ✓
+----------------------------------------
+GT: 2.
+PR: 2'
+CONF:0.570  ✗
+----------------------------------------
+GT: Worst-Case
+PR: @orst - Case
+CONF:0.096  ✗
+----------------------------------------
+GT: Example
+PR: Example
+CONF:0.800  ✓
+----------------------------------------
+GT: Test
+PR: Tost
+CONF:0.300  ✗

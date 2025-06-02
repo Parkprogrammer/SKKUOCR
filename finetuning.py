@@ -77,6 +77,10 @@ class HandwritingCrops(Dataset):
             return None     # ← DataLoader에서 버려질 샘플
 
         text, length = self.converter.encode([cleaned])
+        
+        max_t = self.imgW // 4           # down-sampling 1/4 가정
+        if length > max_t:
+            return None 
         return img, text, length
 
 
@@ -138,6 +142,7 @@ def build_recognizer(opt_txt_fp: str, device: str = "cuda"):
 
     # 4) 기타
     opt["device"] = device
+    # opt["imgH"], opt["imgW"] = 64, 256
 
     # 5) recognizer, converter 반환
     model, converter = get_recognizer(opt)
@@ -156,27 +161,41 @@ def build_recognizer(opt_txt_fp: str, device: str = "cuda"):
 # --------------------------------------------------------------------------
 # 3. 파인튜닝 함수
 # --------------------------------------------------------------------------
-def finetune(recognizer, converter, train_loader,
-             epochs: int = 5, device: str = "cuda"):
+def finetune(recognizer, converter, train_loader, epochs, device="cuda"):
     criterion = torch.nn.CTCLoss(zero_infinity=True)
-    optimizer = torch.optim.Adam(recognizer.parameters(), lr=1e-4)
+    optimizer = torch.optim.Adam(recognizer.parameters(), lr=5e-5)  # lr ↓
+    scheduler  = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10,
+                                                 gamma=0.5)  # 선택
 
     for ep in range(1, epochs + 1):
-        for imgs, tgt, tgt_len in train_loader:
-            imgs = imgs.to(device) # tgt, tgt_len = imgs.to(device), tgt.to(device), tgt_len.to(device)
-            logits = recognizer(imgs)                   # (B, T, vocab)
-            log_probs = logits.log_softmax(2).permute(1, 0, 2)
-            input_len = torch.full(
-                (imgs.size(0),), logits.size(1), dtype=torch.long, device=device
-            )
+        for step, batch in enumerate(train_loader):
+            if batch is None:           # 우리 collate 가 None 반환
+                continue
+            
+            imgs, tgt, tgt_len = batch
+            imgs = imgs.to(device)
+            try:
+                logits = recognizer(imgs)
+                log_probs = logits.log_softmax(2).permute(1, 0, 2)
+                input_len = torch.full((imgs.size(0),), logits.size(1),
+                                       dtype=torch.long, device=device)
+                loss = criterion(log_probs, tgt, input_len, tgt_len)
+                
+                # ← loss 가 inf/nan이면 그 batch skip
+                if torch.isinf(loss) or torch.isnan(loss):
+                    print(f"[skip] ep{ep} step{step}  loss={loss.item()}")
+                    continue
 
-            loss = criterion(log_probs, tgt, input_len, tgt_len)
-            optimizer.zero_grad()
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(recognizer.parameters(), 5.)
-            optimizer.step()
-
+                optimizer.zero_grad()
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(recognizer.parameters(), 1.0)
+                optimizer.step()
+            except RuntimeError as e:
+                # unexpected CUDNN 오류도 skip
+                print(f"[error skip] {e}")
+                continue
         print(f"[epoch {ep}/{epochs}] loss={loss.item():.4f}")
+
 
 
 # --------------------------------------------------------------------------
@@ -184,10 +203,10 @@ def finetune(recognizer, converter, train_loader,
 # --------------------------------------------------------------------------
 def save_ckpt(recognizer, opt_dict, save_dir: Path):
     save_dir.mkdir(parents=True, exist_ok=True)
-    ckpt_fp = save_dir / "finetuned_brainocr.pt"
+    ckpt_fp = save_dir / "finetune_clova.pt"
     torch.save(recognizer.state_dict(), ckpt_fp)
 
-    opt_fp = save_dir / "finetuned_opt.txt"
+    opt_fp = save_dir / "finetune_clova_opt.txt"
     with opt_fp.open("w", encoding="utf-8") as f:
         for k, v in opt_dict.items():
             if k == "device":         # runtime 정보는 제외
@@ -259,8 +278,8 @@ def quick_eval(reader, data_loader, device="cuda", n_show=3):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--opt_txt",   default="ocr-opt.txt")
-    parser.add_argument("--train_root", required=True)
-    parser.add_argument("--test_root",  required=True)
+    parser.add_argument("--train_root", default="train_clova")
+    parser.add_argument("--test_root",  default="test_clova")
     parser.add_argument("--epochs", type=int, default=5)
     parser.add_argument("--batch", type=int, default=32)
     parser.add_argument("--device", default="cuda")
@@ -271,34 +290,34 @@ if __name__ == "__main__":
     rec, converter, opt_dict = build_recognizer(args.opt_txt, device=args.device)
 
     # dataloader -------------------------------------------------------------
-    # train_set = _BaseCrops(
-    #     csv_fp   = Path(args.train_root) / "train_labels.csv",
-    #     img_dir  = Path(args.train_root) / "merged_images",
-    #     img_size = (100, 64),
-    #     converter= converter,
-    #     for_train=True,       # ← encode 까지 수행
-    # )
-    # test_set  = _BaseCrops(
-    #     csv_fp   = Path(args.test_root)  / "test_labels.csv",
-    #     img_dir  = Path(args.test_root)  / "merged_images",
-    #     img_size = (100, 64),
-    #     for_train=False,      # ← 문자열 그대로 반환
-    # )
+    train_set = _BaseCrops(
+        csv_fp   = Path(args.train_root) / "train_labels.csv",
+        img_dir  = Path(args.train_root) / "merged_images",
+        img_size = (256, 64),
+        converter= converter,
+        for_train=True,       # ← encode 까지 수행
+    )
+    test_set  = _BaseCrops(
+        csv_fp   = Path(args.test_root)  / "test_labels.csv",
+        img_dir  = Path(args.test_root)  / "merged_images",
+        img_size = (256, 64),
+        for_train=False,      # ← 문자열 그대로 반환
+    )
 
-    # train_loader = DataLoader(
-    #     train_set, batch_size=args.batch, shuffle=True,
-    #     num_workers=4, collate_fn=collate_train,
-    #     drop_last=True, pin_memory=True
-    # )
+    train_loader = DataLoader(
+        train_set, batch_size=args.batch, shuffle=True,
+        num_workers=4, collate_fn=collate_train,
+        drop_last=True, pin_memory=True
+    )
     
-    # test_loader = DataLoader(
-    #     test_set,  batch_size=args.batch, shuffle=False,
-    #     num_workers=2, collate_fn=collate_eval,
-    #     pin_memory=True
-    # )
+    test_loader = DataLoader(
+        test_set,  batch_size=args.batch, shuffle=False,
+        num_workers=2, collate_fn=collate_eval,
+        pin_memory=True
+    )
 
     # # fine-tune --------------------------------------------------------------
-    # finetune(rec, converter, train_loader, epochs=args.epochs, device=args.device)
+    finetune(rec, converter, train_loader, epochs=args.epochs, device=args.device)
 
     # # save  ------------------------------------------------------------------
     ckpt_fp, opt_fp = save_ckpt(rec, opt_dict, Path(args.save_dir))
@@ -316,7 +335,7 @@ if __name__ == "__main__":
     train_eval_set = _BaseCrops(
     csv_fp   = Path(args.train_root) / "train_labels.csv",
     img_dir  = Path(args.train_root) / "merged_images",
-    img_size = (100, 64),
+    img_size = (256, 64),
     for_train=False)                     # ← 문자열 그대로 반환
     
     train_eval_loader = DataLoader(

@@ -70,6 +70,9 @@ class _BaseCrops(Dataset):
             return None                              # DataLoader 에서 skip
 
         enc, ln = self.converter.encode([gt_text])
+        # CTC length check  (down-sample ratio ≈ 4)
+        if ln > self.imgW // 4:
+           return None
         return img, enc, ln
 
 def collate_train(batch):
