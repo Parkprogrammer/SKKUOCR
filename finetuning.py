@@ -13,6 +13,7 @@ run:  python finetune_brainocr.py --train_root correction_data_a/train/handwriti
 import argparse, json, cv2, torch, yaml, shutil
 from pathlib import Path
 from typing import List
+import wandb
 
 from torch.utils.data import Dataset, DataLoader
 from pororo.models.brainOCR.recognition import get_recognizer
@@ -62,6 +63,12 @@ class HandwritingCrops(Dataset):
 
         # ---------- 이미지 ----------
         img = cv2.imread(str(png_fp), cv2.IMREAD_GRAYSCALE)
+        h0, w0 = img.shape[:2]
+
+        # quantile based filtering    
+        if (w0 > 271) or (w0 * h0 > 18000):
+            return None
+
         img = cv2.resize(img, (self.imgW, self.imgH), interpolation=cv2.INTER_AREA)
         img = torch.tensor(img, dtype=torch.float32).unsqueeze(0) / 255.
 
@@ -137,7 +144,10 @@ def build_recognizer(opt_txt_fp: str, device: str = "cuda"):
     opt["num_class"] = opt["vocab_size"]
 
     # 3) 모델 ckpt 경로 지정  (← 빠져 있어서 KeyError 발생)
-    default_ckpt = Path.home() / ".pororo" / "misc" / "brainocr.pt"
+    # default_ckpt = Path.home() / ".pororo" / "misc" / "brainocr.pt"
+
+    # path 수정
+    default_ckpt = "pororo/misc/brainocr.pt"
     opt["rec_model_ckpt_fp"] = str(default_ckpt)
 
     # 4) 기타
@@ -161,9 +171,9 @@ def build_recognizer(opt_txt_fp: str, device: str = "cuda"):
 # --------------------------------------------------------------------------
 # 3. 파인튜닝 함수
 # --------------------------------------------------------------------------
-def finetune(recognizer, converter, train_loader, epochs, device="cuda"):
+def finetune(recognizer, converter, train_loader, epochs, learning_rate, device="cuda"):
     criterion = torch.nn.CTCLoss(zero_infinity=True)
-    optimizer = torch.optim.Adam(recognizer.parameters(), lr=5e-5)  # lr ↓
+    optimizer = torch.optim.Adam(recognizer.parameters(), lr=learning_rate)  # lr ↓
     scheduler  = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10,
                                                  gamma=0.5)  # 선택
 
@@ -195,7 +205,7 @@ def finetune(recognizer, converter, train_loader, epochs, device="cuda"):
                 print(f"[error skip] {e}")
                 continue
         print(f"[epoch {ep}/{epochs}] loss={loss.item():.4f}")
-
+        wandb.log({"epoch": ep, "loss": loss.item()})
 
 
 # --------------------------------------------------------------------------
@@ -276,16 +286,33 @@ def quick_eval(reader, data_loader, device="cuda", n_show=3):
 
 # --------------------------------------------------------------------------
 if __name__ == "__main__":
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--opt_txt",   default="ocr-opt.txt")
     parser.add_argument("--train_root", default="train_clova")
     parser.add_argument("--test_root",  default="test_clova")
     parser.add_argument("--epochs", type=int, default=5)
-    parser.add_argument("--batch", type=int, default=32)
+    parser.add_argument("--learning_rate", type=float, default=1e-6)
+    parser.add_argument("--batch", type=int, default=64)
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--save_dir", default="assets")
+    parser.add_argument("--exp_name", type=str, default="clvoa")
     args = parser.parse_args()
 
+    wandb.init(
+        project="brainocr-fine-tuning",
+        name=f"{args.save_dir}_{args.epochs}_lr_{args.learning_rate}_{args.exp_name}",  
+        config={
+            "epochs": args.epochs,
+            "batch_size": args.batch,
+            "learning_rate": args.learning_rate,
+            "device": args.device,
+            "opt_txt": args.opt_txt,
+            "train_root": args.train_root,
+            "test_root": args.test_root
+        }
+    )
+    
     # recognizer (pre-trained) ------------------------------------------------
     rec, converter, opt_dict = build_recognizer(args.opt_txt, device=args.device)
 
@@ -317,7 +344,14 @@ if __name__ == "__main__":
     )
 
     # # fine-tune --------------------------------------------------------------
-    finetune(rec, converter, train_loader, epochs=args.epochs, device=args.device)
+    finetune(
+        rec, 
+        converter, 
+        train_loader, 
+        epochs=args.epochs, 
+        learning_rate=args.learning_rate,
+        device=args.device
+    )
 
     # # save  ------------------------------------------------------------------
     ckpt_fp, opt_fp = save_ckpt(rec, opt_dict, Path(args.save_dir))

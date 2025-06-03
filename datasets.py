@@ -12,7 +12,7 @@ from torch.utils.data import DataLoader
 from typing import List, Sequence, Tuple
 from pororo.models.brainOCR.recognition import AlignCollate, ListDataset,               \
                          recognizer_predict, second_recognizer_predict
-
+import wandb
 
 
 FORBIDDEN = re.compile(r'[←→↔↕↖↗↘↙➔➜]')   # ← ① compile!
@@ -187,3 +187,6 @@ def evaluate_dataset(reader,
     if fp:
         fp.close()
         print(f"🔖  CSV saved to:  {save_csv}")
+
+
+    wandb.log({"eval/accuracy": acc})
