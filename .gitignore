@@ -22,3 +22,10 @@ test_clova/
 CLOVA_V2_train/
 
 finetune_results/
+
+wandb/
+*.pt
+*.txt
+*.png
+*.jpg
+*.pyc

@@ -6,7 +6,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.init as init
 from torchvision import models
-from torchvision.models.vgg import model_urls
+from torchvision.models import vgg16, VGG16_BN_Weights
+
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -29,15 +30,20 @@ class Vgg16BN(torch.nn.Module):
 
     def __init__(self, pretrained: bool = True, freeze: bool = True):
         super(Vgg16BN, self).__init__()
-        model_urls["vgg16_bn"] = model_urls["vgg16_bn"].replace(
-            "https://", "http://")
-        vgg_pretrained_features = models.vgg16_bn(
-            pretrained=pretrained).features
+
+        if pretrained:
+            vgg_pretrained = models.vgg16_bn(weights=VGG16_BN_Weights.IMAGENET1K_V1)
+        else:
+            vgg_pretrained = models.vgg16_bn(weights=None)
+
+        vgg_pretrained_features = vgg_pretrained.features
+
         self.slice1 = torch.nn.Sequential()
         self.slice2 = torch.nn.Sequential()
         self.slice3 = torch.nn.Sequential()
         self.slice4 = torch.nn.Sequential()
         self.slice5 = torch.nn.Sequential()
+
         for x in range(12):  # conv2_2
             self.slice1.add_module(str(x), vgg_pretrained_features[x])
         for x in range(12, 19):  # conv3_3
@@ -47,7 +53,6 @@ class Vgg16BN(torch.nn.Module):
         for x in range(29, 39):  # conv5_3
             self.slice4.add_module(str(x), vgg_pretrained_features[x])
 
-        # fc6, fc7 without atrous conv
         self.slice5 = torch.nn.Sequential(
             nn.MaxPool2d(kernel_size=3, stride=1, padding=1),
             nn.Conv2d(512, 1024, kernel_size=3, padding=6, dilation=6),
@@ -60,11 +65,10 @@ class Vgg16BN(torch.nn.Module):
             init_weights(self.slice3.modules())
             init_weights(self.slice4.modules())
 
-        init_weights(
-            self.slice5.modules())  # no pretrained model for fc6 and fc7
+        init_weights(self.slice5.modules())
 
         if freeze:
-            for param in self.slice1.parameters():  # only first conv
+            for param in self.slice1.parameters():
                 param.requires_grad = False
 
     def forward(self, x):
