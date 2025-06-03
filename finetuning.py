@@ -25,6 +25,19 @@ from datasets import _BaseCrops, collate_eval, collate_train, evaluate_dataset
 
 import re
 
+import os
+
+def get_unique_save_dir(base_dir="assets", prefix="test"):
+    os.makedirs(base_dir, exist_ok=True)  # assets 폴더가 없으면 생성
+
+    idx = 1
+    while True:
+        save_dir = os.path.join(base_dir, f"{prefix}_{idx}")
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+            return save_dir
+        idx += 1
+
 FORBIDDEN = r'[←→↔↕↖↗↘↙➔➜]'      # 필요에 따라 추가
 tbl = str.maketrans({"\n": " ", "\t": " "})  # 빠른 치환용 table
 UNKNOWN_SET = set()          # 학습 시작 전에 한 번 비워둡니다
@@ -283,15 +296,18 @@ if __name__ == "__main__":
     parser.add_argument("--train_root", default="train_clova")
     parser.add_argument("--test_root",  default="test_clova")
     parser.add_argument("--epochs", type=int, default=5)
-    parser.add_argument("--batch", type=int, default=32)
+    parser.add_argument("--batch", type=int, default=64)
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--save_dir", default="assets")
     parser.add_argument("--lr", type=float, default=1e-4)
     args = parser.parse_args()
     
+    save_dir = get_unique_save_dir()
+    print(f"모델 저장 경로: {save_dir}")
+    
     wandb.init(
         project="brainocr-fine-tuning",      # 원하는 프로젝트 이름
-        name=f"run_epochs{args.epochs}lr{args.lr}",  # 실험(run) 이름
+        name=f"{save_dir}_{args.epochs}_lr{args.lr}_clova",  # 실험(run) 이름
         config={
             "epochs": args.epochs,
             "batch_size": args.batch,
@@ -337,7 +353,7 @@ if __name__ == "__main__":
     finetune(rec, converter, train_loader, epochs=args.epochs, device=args.device)
 
     # # save  ------------------------------------------------------------------
-    ckpt_fp, opt_fp = save_ckpt(rec, opt_dict, Path(args.save_dir))
+    ckpt_fp, opt_fp = save_ckpt(rec, opt_dict, Path(save_dir))
 
     # reload with Reader -----------------------------------------------------
     reader = brainocr.Reader(
