@@ -10,8 +10,15 @@ text_data/
 
 train/
 test/
+
 tmp_crops/
 test_data/
+temp/
 
 correction_data/
+correction_data_a/
+train_clova/
+test_clova/
+CLOVA_V2_train/
+
 finetune_results/

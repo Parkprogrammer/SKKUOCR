@@ -107,18 +107,18 @@ class PororoOcr:
 if __name__ == "__main__":
     ocr = PororoOcr()
     # image_path = input("Enter image path: ")
-    IMAGE_PATH = "test/handwriting"
+    IMAGE_PATH = "train"
     
     
     for filename in os.listdir(IMAGE_PATH):
         filepath = os.path.join(IMAGE_PATH,filename)
-        filepath = "test/image/C_002.png"
+        filepath = "/home/parkprogrammer/korean_ocr_using_pororo/train/merged_images/0.png"
         
         # if filepath.lower().endswith(('.png', '.jpg', '.jpeg')):
         print(f"Processing {filepath}...")
         # result = ocr(filepath)
         # print(f"OCR result for {filepath}: {result}")
-        text = ocr.run_ocr(filepath, debug=False)
+        text = ocr.run_ocr(filepath, debug=True)
         print(f'Result for {filepath} : {text}')
         #else:
             # print(f"Skipping non-image file: {filepath}")
