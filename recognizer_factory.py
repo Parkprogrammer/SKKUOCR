@@ -13,6 +13,8 @@ run:  python finetune_brainocr.py --train_root correction_data_a/train/handwriti
 import argparse, json, cv2, torch, yaml, shutil
 from pathlib import Path
 from typing import List
+import pandas as pd
+import wandb
 
 from torch.utils.data import Dataset, DataLoader
 from pororo.models.brainOCR.recognition import get_recognizer
@@ -46,13 +48,13 @@ class HandwritingCrops(Dataset):
         self.converter = converter
         self.samples = []  # [(png_path, text)]
 
-        for meta_fp in (self.root / "label").glob("*.json"):
-            metas = json.loads(meta_fp.read_text(encoding="utf-8"))
-            for m in metas:
-                txt = m["corrected_text"] if use_corrected else m["original_text"]
-                if not txt.strip():
-                    continue
-                self.samples.append((self.root / m["image_filename"], txt))
+        df = pd.read_csv(self.root / "merged_labels.csv", dtype={"text": str})
+        for _, row in df.iterrows():
+            img_path = self.root / "merged_images" / row["filename"]
+            txt = row["text"]
+            if not isinstance(txt, str) or not txt.strip():
+                continue
+            self.samples.append((img_path, txt))
 
     def __len__(self): return len(self.samples)
 
@@ -132,7 +134,7 @@ def build_recognizer(opt_txt_fp: str, device: str = "cuda"):
     opt["num_class"] = opt["vocab_size"]
 
     # 3) 모델 ckpt 경로 지정  (← 빠져 있어서 KeyError 발생)
-    default_ckpt = Path.home() / ".pororo" / "misc" / "brainocr.pt"
+    default_ckpt = "brainocr.pt"
     opt["rec_model_ckpt_fp"] = str(default_ckpt)
 
     # 4) 기타
@@ -156,26 +158,55 @@ def build_recognizer(opt_txt_fp: str, device: str = "cuda"):
 # 3. 파인튜닝 함수
 # --------------------------------------------------------------------------
 def finetune(recognizer, converter, train_loader,
-             epochs: int = 5, device: str = "cuda"):
+             epochs: int = 5, device: str = "cuda", learning_rate: float = 1e-4):
+    
+    wandb.watch(recognizer, log="all")  # wandb 로깅
+    
     criterion = torch.nn.CTCLoss(zero_infinity=True)
-    optimizer = torch.optim.Adam(recognizer.parameters(), lr=1e-4)
+    optimizer = torch.optim.Adam(recognizer.parameters(), lr=learning_rate)
 
     for ep in range(1, epochs + 1):
-        for imgs, tgt, tgt_len in train_loader:
-            imgs = imgs.to(device) # tgt, tgt_len = imgs.to(device), tgt.to(device), tgt_len.to(device)
+        running_loss = 0.0
+        for batch_idx, batch in enumerate(train_loader, start=1):
+            if batch is None:
+                continue
+            imgs, tgt, tgt_len = batch
+            imgs = imgs.to(device)
+            tgt_gpu = tgt.to(device)
+            tgt_len_gpu = tgt_len.to(device)
+
             logits = recognizer(imgs)                   # (B, T, vocab)
             log_probs = logits.log_softmax(2).permute(1, 0, 2)
             input_len = torch.full(
                 (imgs.size(0),), logits.size(1), dtype=torch.long, device=device
             )
 
-            loss = criterion(log_probs, tgt, input_len, tgt_len)
+            loss = criterion(log_probs, tgt.cpu(), input_len.cpu(), tgt_len.cpu())
             optimizer.zero_grad()
             loss.backward()
             torch.nn.utils.clip_grad_norm_(recognizer.parameters(), 5.)
             optimizer.step()
 
+            running_loss += loss.item()
+
+            # === W&B: 배치 단위로 loss 기록 ===
+            if batch_idx % 10 == 0:
+                avg_batch_loss = running_loss / 10
+                wandb.log({
+                    "train/batch_loss": avg_batch_loss,
+                    "train/epoch": ep,
+                    "train/step": (ep - 1) * len(train_loader) + batch_idx
+                })
+                running_loss = 0.0
+
+        # === W&B: 에포크 단위로 loss 기록 ===
+        wandb.log({
+            "train/epoch_loss": loss.item(),
+            "train/epoch": ep
+        })
         print(f"[epoch {ep}/{epochs}] loss={loss.item():.4f}")
+
+
 
 
 # --------------------------------------------------------------------------
@@ -258,7 +289,22 @@ if __name__ == "__main__":
     parser.add_argument("--batch", type=int, default=32)
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--save_dir", default="assets")
+    parser.add_argument("--lr", type=float, default=1e-4)
     args = parser.parse_args()
+    
+    wandb.init(
+        project="brainocr-fine-tuning",      # 원하는 프로젝트 이름
+        name=f"run_epochs{args.epochs}lr{args.lr}",  # 실험(run) 이름
+        config={
+            "epochs": args.epochs,
+            "batch_size": args.batch,
+            "learning_rate": 1e-4,
+            "device": args.device,
+            "opt_txt": args.opt_txt,
+            "train_root": args.train_root,
+            "test_root": args.test_root
+        }
+    )
 
     # recognizer (pre-trained) ------------------------------------------------
     rec, converter, opt_dict = build_recognizer(args.opt_txt, device=args.device)
@@ -277,7 +323,7 @@ if __name__ == "__main__":
     )
 
     # fine-tune --------------------------------------------------------------
-    finetune(rec, converter, train_loader, epochs=args.epochs, device=args.device)
+    finetune(rec, converter, train_loader, epochs=args.epochs, device=args.device, learning_rate=args.lr)
 
     # save  ------------------------------------------------------------------
     ckpt_fp, opt_fp = save_ckpt(rec, opt_dict, Path(args.save_dir))
@@ -285,10 +331,12 @@ if __name__ == "__main__":
     # reload with Reader -----------------------------------------------------
     reader = brainocr.Reader(
         lang="ko",
-        det_model_ckpt_fp=ckpt_fp.parent / "craft.pt",   # CRAFT 그대로
+        det_model_ckpt_fp="/workspace/SKKUOCR2/SKKUOCR_fine/assets/craft.pt",   # CRAFT 그대로
         rec_model_ckpt_fp=str(ckpt_fp),
         opt_fp=str(opt_fp),
         device=args.device,
     )
     reader.recognizer.to(args.device)
     quick_eval(reader, test_loader, args.device)
+
+    wandb.finish()
