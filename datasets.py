@@ -48,32 +48,43 @@ class _BaseCrops(Dataset):
         txt = FORBIDDEN.sub(" ", txt)
         txt = re.sub(r"\s{2,}", " ", txt).strip()
         return txt
-
+    
     def __getitem__(self, idx):
         row = self.df.iloc[idx]
         img_fp  = self.img_dir / row['filename']
         gt_text = self._clean(row['text'])
 
-        # --- 이미지 로드 & resize ---------------------------------
+        # --- 이미지 로드 --------------------------------------------
         img = cv2.imread(str(img_fp), cv2.IMREAD_GRAYSCALE)
-        if img is None:                         
+        if img is None:
             return None
-        img = cv2.resize(img, (self.imgW, self.imgH),
-                         interpolation=cv2.INTER_AREA)
+
+        # === 전처리 조건 ① : 이미지 비율 / 크기 필터링 ===============
+        h0, w0 = img.shape
+        if (w0 > 271) or (w0 * h0 > 18000) or (h0 * 3 < w0):
+            return None
+
+        # --- Resize -------------------------------------------------
+        img = cv2.resize(img, (self.imgW, self.imgH), interpolation=cv2.INTER_AREA)
         img = torch.tensor(img, dtype=torch.float32).unsqueeze(0) / 255.
 
-        if not self.for_train:                       # 평가용 → (img, str)
+        if not self.for_train:
             return img, gt_text
 
-        # 학습용 → (img, encoded, len)
+        # === 전처리 조건 ② : 글자 수가 1글자 이하면 제외 =============
+        if len(gt_text) <= 1:
+            return None
+
+        # --- 문자 인코딩 ---------------------------------------------
         if any(ch not in self.converter.char2idx for ch in gt_text):
-            return None                              # DataLoader 에서 skip
+            return None
 
         enc, ln = self.converter.encode([gt_text])
-        # CTC length check  (down-sample ratio ≈ 4)
         if ln > self.imgW // 4:
-           return None
+            return None
+
         return img, enc, ln
+
 
 def collate_train(batch):
     batch = [b for b in batch if b is not None]

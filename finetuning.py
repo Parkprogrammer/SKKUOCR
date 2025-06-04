@@ -77,9 +77,6 @@ class HandwritingCrops(Dataset):
 
         # ---------- 이미지 ----------
         img = cv2.imread(str(png_fp), cv2.IMREAD_GRAYSCALE)
-        h0, w0 = img.shape[:2]
-        if(w0 > 271) or (w0 * h0 > 18000):
-            return None
         img = cv2.resize(img, (self.imgW, self.imgH), interpolation=cv2.INTER_AREA)
         img = torch.tensor(img, dtype=torch.float32).unsqueeze(0) / 255.
 
@@ -180,40 +177,59 @@ def build_recognizer(opt_txt_fp: str, device: str = "cuda"):
 # 3. 파인튜닝 함수
 # --------------------------------------------------------------------------
 def finetune(recognizer, converter, train_loader, epochs, lr, device="cuda"):
+    # 1) 손실·옵티마이저·스케줄러 세팅
     criterion = torch.nn.CTCLoss(zero_infinity=True)
-    optimizer = torch.optim.Adam(recognizer.parameters(), lr=lr)  # lr ↓
-    scheduler  = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10,
-                                                 gamma=0.5)  # 선택
+    optimizer = torch.optim.Adam(
+        recognizer.parameters(), lr=lr, weight_decay=1e-5
+    )  # weight_decay 추가
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer, mode="min", factor=0.5, patience=5, verbose=True
+    )
+
+    # 2) 모델 train 모드
+    recognizer.train()
 
     for ep in range(1, epochs + 1):
+        running_loss = 0.0
+        batch_count = 0
+
         for step, batch in enumerate(train_loader):
-            if batch is None:           # 우리 collate 가 None 반환
+            if batch is None:
                 continue
-            
+
             imgs, tgt, tgt_len = batch
             imgs = imgs.to(device)
+            recognizer.zero_grad()
+
             try:
-                logits = recognizer(imgs)
+                logits = recognizer(imgs)  # (B, T, C)
                 log_probs = logits.log_softmax(2).permute(1, 0, 2)
-                input_len = torch.full((imgs.size(0),), logits.size(1),
-                                       dtype=torch.long, device=device)
+                input_len = torch.full(
+                    (imgs.size(0),), logits.size(1), dtype=torch.long, device=device
+                )
                 loss = criterion(log_probs, tgt, input_len, tgt_len)
-                
-                # ← loss 가 inf/nan이면 그 batch skip
+
                 if torch.isinf(loss) or torch.isnan(loss):
                     print(f"[skip] ep{ep} step{step}  loss={loss.item()}")
                     continue
 
-                optimizer.zero_grad()
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(recognizer.parameters(), 1.0)
                 optimizer.step()
+
+                running_loss += loss.item()
+                batch_count += 1
             except RuntimeError as e:
-                # unexpected CUDNN 오류도 skip
                 print(f"[error skip] {e}")
                 continue
-        print(f"[epoch {ep}/{epochs}] loss={loss.item():.4f}")
-        wandb.log({"epoch": ep, "loss": loss.item()})
+
+        # 3) 에포크별 평균 loss 및 lr 로그
+        avg_loss = running_loss / batch_count if batch_count > 0 else float("nan")
+        scheduler.step(avg_loss)
+
+        current_lr = optimizer.param_groups[0]['lr']
+        print(f"[epoch {ep}/{epochs}] avg_loss={avg_loss:.6f}, lr={current_lr:.2e}")
+        wandb.log({"epoch": ep, "avg_loss": avg_loss, "lr": current_lr})
 
 
 
@@ -362,7 +378,7 @@ if __name__ == "__main__":
     # reload with Reader -----------------------------------------------------
     reader = brainocr.Reader(
         lang="ko",
-        det_model_ckpt_fp="/workspace/SKKUOCR2/SKKUOCR_fine/assets/craft.pt",   # CRAFT 그대로
+        det_model_ckpt_fp="/home/heven/SKKUOCR/assets/craft.pt",   # CRAFT 그대로
         rec_model_ckpt_fp=str(ckpt_fp),
         opt_fp=str(opt_fp),
         device=args.device,
