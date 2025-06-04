@@ -64,6 +64,9 @@ class _BaseCrops(Dataset):
 
         if not self.for_train:                       # 평가용 → (img, str)
             return img, gt_text
+        
+        if len(gt_text) <= 1:
+            return None
 
         # 학습용 → (img, encoded, len)
         if any(ch not in self.converter.char2idx for ch in gt_text):
