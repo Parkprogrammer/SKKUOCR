@@ -77,6 +77,9 @@ class HandwritingCrops(Dataset):
 
         # ---------- 이미지 ----------
         img = cv2.imread(str(png_fp), cv2.IMREAD_GRAYSCALE)
+        h0, w0 = img.shape[:2]
+        if(w0 > 271) or (w0 * h0 > 18000):
+            return None
         img = cv2.resize(img, (self.imgW, self.imgH), interpolation=cv2.INTER_AREA)
         img = torch.tensor(img, dtype=torch.float32).unsqueeze(0) / 255.
 
@@ -176,9 +179,9 @@ def build_recognizer(opt_txt_fp: str, device: str = "cuda"):
 # --------------------------------------------------------------------------
 # 3. 파인튜닝 함수
 # --------------------------------------------------------------------------
-def finetune(recognizer, converter, train_loader, epochs, device="cuda"):
+def finetune(recognizer, converter, train_loader, epochs, lr, device="cuda"):
     criterion = torch.nn.CTCLoss(zero_infinity=True)
-    optimizer = torch.optim.Adam(recognizer.parameters(), lr=5e-5)  # lr ↓
+    optimizer = torch.optim.Adam(recognizer.parameters(), lr=lr)  # lr ↓
     scheduler  = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10,
                                                  gamma=0.5)  # 선택
 
@@ -210,6 +213,7 @@ def finetune(recognizer, converter, train_loader, epochs, device="cuda"):
                 print(f"[error skip] {e}")
                 continue
         print(f"[epoch {ep}/{epochs}] loss={loss.item():.4f}")
+        wandb.log({"epoch": ep, "loss": loss.item()})
 
 
 
@@ -311,7 +315,7 @@ if __name__ == "__main__":
         config={
             "epochs": args.epochs,
             "batch_size": args.batch,
-            "learning_rate": 1e-4,
+            "learning_rate": args.lr,
             "device": args.device,
             "opt_txt": args.opt_txt,
             "train_root": args.train_root,
@@ -350,7 +354,7 @@ if __name__ == "__main__":
     )
 
     # # fine-tune --------------------------------------------------------------
-    finetune(rec, converter, train_loader, epochs=args.epochs, device=args.device)
+    finetune(rec, converter, train_loader, epochs=args.epochs, lr=args.lr, device=args.device)
 
     # # save  ------------------------------------------------------------------
     ckpt_fp, opt_fp = save_ckpt(rec, opt_dict, Path(save_dir))
