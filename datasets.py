@@ -58,6 +58,12 @@ class _BaseCrops(Dataset):
         img = cv2.imread(str(img_fp), cv2.IMREAD_GRAYSCALE)
         if img is None:                         
             return None
+
+        # quantile based filtering    
+        h0, w0 = img.shape[:2]
+        if (w0 > 271) or (w0 * h0 > 18000):
+            return None    
+
         img = cv2.resize(img, (self.imgW, self.imgH),
                          interpolation=cv2.INTER_AREA)
         img = torch.tensor(img, dtype=torch.float32).unsqueeze(0) / 255.
@@ -70,6 +76,7 @@ class _BaseCrops(Dataset):
             return None                              # DataLoader 에서 skip
 
         enc, ln = self.converter.encode([gt_text])
+
         # CTC length check  (down-sample ratio ≈ 4)
         if ln > self.imgW // 4:
            return None

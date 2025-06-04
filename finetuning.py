@@ -16,6 +16,7 @@ from typing import List
 import wandb
 
 from torch.utils.data import Dataset, DataLoader
+from torch.optim.lr_scheduler import CosineAnnealingLR
 from pororo.models.brainOCR.recognition import get_recognizer
 from pororo.models.brainOCR import brainocr      # Reader 클래스
 from pororo.tasks import download_or_load
@@ -63,12 +64,6 @@ class HandwritingCrops(Dataset):
 
         # ---------- 이미지 ----------
         img = cv2.imread(str(png_fp), cv2.IMREAD_GRAYSCALE)
-        h0, w0 = img.shape[:2]
-
-        # quantile based filtering    
-        if (w0 > 271) or (w0 * h0 > 18000):
-            return None
-
         img = cv2.resize(img, (self.imgW, self.imgH), interpolation=cv2.INTER_AREA)
         img = torch.tensor(img, dtype=torch.float32).unsqueeze(0) / 255.
 
@@ -84,7 +79,6 @@ class HandwritingCrops(Dataset):
             return None     # ← DataLoader에서 버려질 샘플
 
         text, length = self.converter.encode([cleaned])
-        
         max_t = self.imgW // 4           # down-sampling 1/4 가정
         if length > max_t:
             return None 
@@ -172,10 +166,18 @@ def build_recognizer(opt_txt_fp: str, device: str = "cuda"):
 # 3. 파인튜닝 함수
 # --------------------------------------------------------------------------
 def finetune(recognizer, converter, train_loader, epochs, learning_rate, device="cuda"):
+
+    print("Parmas with requires_grad=True")
+    for name, param in recognizer.named_parameters():
+        if param.requires_grad:
+            print(f"{name} | shape={tuple(param.shape)}")
+
+
     criterion = torch.nn.CTCLoss(zero_infinity=True)
     optimizer = torch.optim.Adam(recognizer.parameters(), lr=learning_rate)  # lr ↓
-    scheduler  = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10,
-                                                 gamma=0.5)  # 선택
+    scheduler = CosineAnnealingLR(optimizer, T_max=epochs, eta_min=1e-6)
+    # scheduler  = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10,
+                                                #  gamma=0.5)  # 선택
 
     for ep in range(1, epochs + 1):
         for step, batch in enumerate(train_loader):
@@ -190,11 +192,22 @@ def finetune(recognizer, converter, train_loader, epochs, learning_rate, device=
                 input_len = torch.full((imgs.size(0),), logits.size(1),
                                        dtype=torch.long, device=device)
                 loss = criterion(log_probs, tgt, input_len, tgt_len)
-                
-                # ← loss 가 inf/nan이면 그 batch skip
+                # Check length
+                # if input_len.min() < tgt_len.max():
+                    # print(f"[invalid] input_len < tgt_len → input_len={input_len}, tgt_len={tgt_len}")
+
+                # if loss is inf or nan, print log and skip
                 if torch.isinf(loss) or torch.isnan(loss):
                     print(f"[skip] ep{ep} step{step}  loss={loss.item()}")
-                    continue
+                    # for i in range(len(tgt_len)):
+                    #     print(f"  sample[{i}] → input_len={input_len[i]}, tgt_len={tgt_len[i]}, text_len={tgt_len[i].item()}")
+                    #     try:
+                    #         text_str, _ = converter.decode(tgt[i:i+1], tgt_len[i:i+1])
+                    #         print(f"    decoded: {text_str[0]}")
+                    #     except Exception as e:
+                    #         print(f"    decode error: {e}")
+                    #         print(f"    raw tgt[{i}]: {tgt[i]}")
+                    # continue
 
                 optimizer.zero_grad()
                 loss.backward()
@@ -206,6 +219,7 @@ def finetune(recognizer, converter, train_loader, epochs, learning_rate, device=
                 continue
         print(f"[epoch {ep}/{epochs}] loss={loss.item():.4f}")
         wandb.log({"epoch": ep, "loss": loss.item()})
+        scheduler.step()
 
 
 # --------------------------------------------------------------------------
