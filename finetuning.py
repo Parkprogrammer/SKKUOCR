@@ -171,7 +171,7 @@ def build_recognizer(opt_txt_fp: str, device: str = "cuda"):
         converter.decode = types.MethodType(_decode, converter)
     # ----------------------------------------------------------------------
     return model, converter, opt
-
+ss
 
 # --------------------------------------------------------------------------
 # 3. 파인튜닝 함수
@@ -350,12 +350,17 @@ if __name__ == "__main__":
         converter= converter,
         for_train=True,       # ← encode 까지 수행
     )
+    train_set.preload_for_stats()
+    train_set.print_filter_report()
+
     test_set  = _BaseCrops(
         csv_fp   = Path(args.test_root)  / "test_labels.csv",
         img_dir  = Path(args.test_root)  / "merged_images",
         img_size = (256, 64),
         for_train=False,      # ← 문자열 그대로 반환
     )
+    test_set.preload_for_stats()
+    test_set.print_filter_report()
 
     train_loader = DataLoader(
         train_set, batch_size=args.batch, shuffle=True,

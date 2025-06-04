@@ -19,21 +19,14 @@ FORBIDDEN = re.compile(r'[←→↔↕↖↗↘↙➔➜]')   # ← ① compile!
 _tbl = str.maketrans({"\n": " ", "\t": " "})
 
 class _BaseCrops(Dataset):
-    """CSV 한 장을 받아 <img,tgt> 를 뱉는 공통 로직"""
     def __init__(self, *, csv_fp: Path, img_dir: Path,
                  img_size=(100, 64), converter=None, for_train=True):
 
-        # 1) CSV 읽기 ----------------------------------------
-        #   ① 헤더가 이미 있을 수도, 없을 수도 있으니 두 경우 모두 커버
         df = pd.read_csv(csv_fp, header=None, names=["filename", "text"],
                          dtype={"filename": str, "text": str},
-                         keep_default_na=False)   # NaN 대신 빈 문자열
-
-        # 2) 헤더행(문자 그대로 'filename') 제거 ---------------
+                         keep_default_na=False)
         df = df[df["filename"].str.lower() != "filename"]
-
-        # 3) 빈텍스트 제거 ------------------------------------
-        df = df[df["text"].str.strip().astype(bool)].reset_index(drop=True)
+        df = df[df["text"].fillna("").str.strip().astype(bool)].reset_index(drop=True)
 
         self.df = df
         self.img_dir = img_dir
@@ -41,50 +34,75 @@ class _BaseCrops(Dataset):
         self.converter = converter
         self.for_train = for_train
 
-    def __len__(self): return len(self.df)
+        # 통계 카운터 추가
+        self.stats = {
+            "total": len(df),
+            "img_load_fail": 0,
+            "img_shape_filter": 0,
+            "text_len_filter": 0,
+            "char_invalid": 0,
+            "ctc_len_filter": 0,
+            "passed": 0
+        }
+
+    def __len__(self):
+        return len(self.df)
 
     def _clean(self, txt: str):
         txt = txt.translate(_tbl)
         txt = FORBIDDEN.sub(" ", txt)
         txt = re.sub(r"\s{2,}", " ", txt).strip()
         return txt
-    
+
     def __getitem__(self, idx):
         row = self.df.iloc[idx]
-        img_fp  = self.img_dir / row['filename']
+        img_fp = self.img_dir / row['filename']
         gt_text = self._clean(row['text'])
 
-        # --- 이미지 로드 --------------------------------------------
         img = cv2.imread(str(img_fp), cv2.IMREAD_GRAYSCALE)
         if img is None:
+            self.stats["img_load_fail"] += 1
             return None
 
-        # === 전처리 조건 ① : 이미지 비율 / 크기 필터링 ===============
         h0, w0 = img.shape
         if (w0 > 271) or (w0 * h0 > 18000) or (h0 * 3 < w0):
+            self.stats["img_shape_filter"] += 1
             return None
 
-        # --- Resize -------------------------------------------------
-        img = cv2.resize(img, (self.imgW, self.imgH), interpolation=cv2.INTER_AREA)
+        img = cv2.resize(img, (self.imgW, self.isssssssssssssssssssssmgH), interpolation=cv2.INTER_AREA)
         img = torch.tensor(img, dtype=torch.float32).unsqueeze(0) / 255.
 
         if not self.for_train:
+            self.stats["passed"] += 1
             return img, gt_text
 
-        # === 전처리 조건 ② : 글자 수가 1글자 이하면 제외 =============
         if len(gt_text) <= 1:
+            self.stats["text_len_filter"] += 1
             return None
 
-        # --- 문자 인코딩 ---------------------------------------------
         if any(ch not in self.converter.char2idx for ch in gt_text):
+            self.stats["char_invalid"] += 1
             return None
 
         enc, ln = self.converter.encode([gt_text])
         if ln > self.imgW // 4:
+            self.stats["ctc_len_filter"] += 1
             return None
 
+        self.stats["passed"] += 1
         return img, enc, ln
 
+    def print_filter_report(self):
+        print("=== Data Filtering Report ===")
+        total = self.stats["total"]
+        for k, v in self.stats.items():
+            if k == "total": continue
+            print(f"{k:>18}: {v:>5} ({v/total*100:.2f}%)")
+        print("==============================")
+
+    def preload_for_stats(self):
+        for i in range(len(self)):
+            _ = self.__getitem__(i)
 
 def collate_train(batch):
     batch = [b for b in batch if b is not None]
