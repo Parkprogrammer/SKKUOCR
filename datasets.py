@@ -69,7 +69,8 @@ class _BaseCrops(Dataset):
             self.stats["img_shape_filter"] += 1
             return None
 
-        img = cv2.resize(img, (self.imgW, self.isssssssssssssssssssssmgH), interpolation=cv2.INTER_AREA)
+        img = cv2.resize(img, (self.imgW, self.imgH), interpolation=cv2.INTER_AREA)
+
         img = torch.tensor(img, dtype=torch.float32).unsqueeze(0) / 255.
 
         if not self.for_train:
@@ -99,7 +100,7 @@ class _BaseCrops(Dataset):
             if k == "total": continue
             print(f"{k:>18}: {v:>5} ({v/total*100:.2f}%)")
         print("==============================")
-
+        
     def preload_for_stats(self):
         for i in range(len(self)):
             _ = self.__getitem__(i)

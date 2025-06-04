@@ -171,7 +171,6 @@ def build_recognizer(opt_txt_fp: str, device: str = "cuda"):
         converter.decode = types.MethodType(_decode, converter)
     # ----------------------------------------------------------------------
     return model, converter, opt
-ss
 
 # --------------------------------------------------------------------------
 # 3. 파인튜닝 함수
@@ -230,6 +229,9 @@ def finetune(recognizer, converter, train_loader, epochs, lr, device="cuda"):
         current_lr = optimizer.param_groups[0]['lr']
         print(f"[epoch {ep}/{epochs}] avg_loss={avg_loss:.6f}, lr={current_lr:.2e}")
         wandb.log({"epoch": ep, "avg_loss": avg_loss, "lr": current_lr})
+
+        print(f"[epoch {ep}/{epochs}] loss={loss.item():.4f}")
+        wandb.log({"epoch": ep, "loss": loss.item()})
 
 
 
