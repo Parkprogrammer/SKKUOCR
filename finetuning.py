@@ -10,7 +10,7 @@ run:  python finetune_brainocr.py --train_root correction_data_a/train/handwriti
                                   --test_root  correction_data_a/test/handwriting \
                                   --epochs 5 --batch 32 --save_dir assets
 """
-import argparse, json, cv2, torch, yaml, shutil
+import argparse, json, cv2, torch, yaml, shutil, itertools
 from pathlib import Path
 from typing import List
 import pandas as pd
@@ -308,32 +308,17 @@ def quick_eval(reader, data_loader, device="cuda", n_show=3):
             print(f"GT: {gt}\nPR: {pr}\n")
         break
 
-
-
-
-# --------------------------------------------------------------------------
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--opt_txt",   default="ocr-opt.txt")
-    parser.add_argument("--train_root", default="train_clova")
-    parser.add_argument("--test_root",  default="test_clova")
-    parser.add_argument("--epochs", type=int, default=5)
-    parser.add_argument("--batch", type=int, default=64)
-    parser.add_argument("--device", default="cuda")
-    parser.add_argument("--save_dir", default="assets")
-    parser.add_argument("--lr", type=float, default=1e-4)
-    args = parser.parse_args()
-    
+def train_and_evaluate(epochs, batch_size, lr, args):
     save_dir = get_unique_save_dir()
     print(f"모델 저장 경로: {save_dir}")
-    
+
     wandb.init(
-        project="brainocr-fine-tuning",      # 원하는 프로젝트 이름
-        name=f"{save_dir}_{args.epochs}_lr{args.lr}_clova",  # 실험(run) 이름
+        project="brainocr-fine-tuning",
+        name=f"{save_dir}_{epochs}_lr{lr}_bs{batch_size}_clova",
         config={
-            "epochs": args.epochs,
-            "batch_size": args.batch,
-            "learning_rate": args.lr,
+            "epochs": epochs,
+            "batch_size": batch_size,
+            "learning_rate": lr,
             "device": args.device,
             "opt_txt": args.opt_txt,
             "train_root": args.train_root,
@@ -341,68 +326,117 @@ if __name__ == "__main__":
         }
     )
 
-    # recognizer (pre-trained) ------------------------------------------------
     rec, converter, opt_dict = build_recognizer(args.opt_txt, device=args.device)
 
-    # dataloader -------------------------------------------------------------
     train_set = _BaseCrops(
-        csv_fp   = Path(args.train_root) / "train_labels.csv",
-        img_dir  = Path(args.train_root) / "merged_images",
-        img_size = (256, 64),
-        converter= converter,
-        for_train=True,       # ← encode 까지 수행
+        csv_fp=Path(args.train_root) / "train_labels.csv",
+        img_dir=Path(args.train_root) / "merged_images",
+        img_size=(256, 64),
+        converter=converter,
+        for_train=True,
     )
     train_set.preload_for_stats()
     train_set.print_filter_report()
 
-    test_set  = _BaseCrops(
-        csv_fp   = Path(args.test_root)  / "test_labels.csv",
-        img_dir  = Path(args.test_root)  / "merged_images",
-        img_size = (256, 64),
-        for_train=False,      # ← 문자열 그대로 반환
+    test_set = _BaseCrops(
+        csv_fp=Path(args.test_root) / "test_labels.csv",
+        img_dir=Path(args.test_root) / "merged_images",
+        img_size=(256, 64),
+        for_train=False,
     )
     test_set.preload_for_stats()
     test_set.print_filter_report()
 
-    train_loader = DataLoader(
-        train_set, batch_size=args.batch, shuffle=True,
-        num_workers=4, collate_fn=collate_train,
-        drop_last=True, pin_memory=True
-    )
-    
-    test_loader = DataLoader(
-        test_set,  batch_size=args.batch, shuffle=False,
-        num_workers=2, collate_fn=collate_eval,
-        pin_memory=True
-    )
+    train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True,
+                              num_workers=4, collate_fn=collate_train, drop_last=True, pin_memory=True)
+    test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False,
+                             num_workers=2, collate_fn=collate_eval, pin_memory=True)
 
-    # # fine-tune --------------------------------------------------------------
-    finetune(rec, converter, train_loader, epochs=args.epochs, lr=args.lr, device=args.device)
+    finetune(rec, converter, train_loader, epochs=epochs, lr=lr, device=args.device)
 
-    # # save  ------------------------------------------------------------------
     ckpt_fp, opt_fp = save_ckpt(rec, opt_dict, Path(save_dir))
 
-    # reload with Reader -----------------------------------------------------
     reader = brainocr.Reader(
         lang="ko",
-        det_model_ckpt_fp="/home/heven/SKKUOCR/assets/craft.pt",   # CRAFT 그대로
+        det_model_ckpt_fp="/home/heven/SKKUOCR/assets/craft.pt",
         rec_model_ckpt_fp=str(ckpt_fp),
         opt_fp=str(opt_fp),
         device=args.device,
     )
     reader.recognizer.to(args.device)
-    # quick_eval(reader, test_loader, args.device)
+
     train_eval_set = _BaseCrops(
-    csv_fp   = Path(args.train_root) / "train_labels.csv",
-    img_dir  = Path(args.train_root) / "merged_images",
-    img_size = (256, 64),
-    for_train=False)                     # ← 문자열 그대로 반환
+        csv_fp=Path(args.train_root) / "train_labels.csv",
+        img_dir=Path(args.train_root) / "merged_images",
+        img_size=(256, 64),
+        for_train=False,
+    )
+
+    # train_eval_loader = DataLoader(train_eval_set, batch_size=batch_size, shuffle=False,
+    #                                num_workers=2, collate_fn=collate_eval, pin_memory=True)
+
+    evaluate_dataset(reader, test_loader, device=args.device, save_csv="assets/train_pred.csv")
+
+    wandb.finish()
+
+
+def test_only(model_ckpt_fp, opt_fp, test_root, device="cuda"):
+    # Reader 초기화
+    reader = brainocr.Reader(
+        lang="ko",
+        det_model_ckpt_fp="/home/heven/SKKUOCR/assets/craft.pt",
+        rec_model_ckpt_fp=str(model_ckpt_fp),
+        opt_fp=str(opt_fp),
+        device=device,
+    )
+    reader.recognizer.to(device)
+
+    # 테스트셋 로드
+    test_set = _BaseCrops(
+        csv_fp=Path(test_root) / "test_labels.csv",
+        img_dir=Path(test_root) / "merged_images",
+        img_size=(256, 64),
+        for_train=False,
+    )
+    test_set.preload_for_stats()
+    test_set.print_filter_report()
+
+    test_loader = DataLoader(
+        test_set, batch_size=64, shuffle=False,
+        num_workers=2, collate_fn=collate_eval, pin_memory=True
+    )
+
+    # 평가 수행 및 결과 저장
+    evaluate_dataset(reader, test_loader, device=device, save_csv="assets/test_pred.csv")
+
+    print("✅ 테스트 완료. 결과는 assets/test_pred.csv에 저장됨.")
+
+
+# --------------------------------------------------------------------------
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--opt_txt",   default="ocr-opt.txt")
+    parser.add_argument("--train_root", default="CLOVA_V2_train")
+    parser.add_argument("--test_root",  default="CLOVA_V2_test")
+    parser.add_argument("--epochs", type=int, default=5)
+    parser.add_argument("--batch", type=int, default=64)
+    parser.add_argument("--device", default="cuda")
+    parser.add_argument("--save_dir", default="assets")
+    parser.add_argument("--lr", type=float, default=1e-4)
+    args = parser.parse_args()
     
-    train_eval_loader = DataLoader(
-        train_eval_set, batch_size=args.batch, shuffle=False,
-        num_workers=2, collate_fn=collate_eval, pin_memory=True)
-    
-    evaluate_dataset(reader,
-                 train_eval_loader,
-                 device=args.device,
-                 save_csv="assets/train_pred.csv")
+    # # Hyperparameter Search Space
+    # epoch_list = [50, 100, 200]
+    # batch_list = [32, 64, 128]
+    # lr_list = [1e-4, 5e-5, 1e-5, 5e-6, 1e-6]
+
+    # # Grid Search
+    # for epochs, batch_size, lr in itertools.product(epoch_list, batch_list, lr_list):
+    #     train_and_evaluate(epochs, batch_size, lr, args)
+
+    test_only(
+    model_ckpt_fp="assets/test_20/finetune_clova.pt",
+    opt_fp="assets/test_20/finetune_clova_opt.txt",
+    test_root="CLOVA_V2_test",
+    device="cuda"
+)

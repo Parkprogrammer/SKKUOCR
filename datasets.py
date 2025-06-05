@@ -65,7 +65,7 @@ class _BaseCrops(Dataset):
             return None
 
         h0, w0 = img.shape
-        if (w0 > 271) or (w0 * h0 > 18000) or (h0 * 3 < w0):
+        if w0 * h0 < 300 :
             self.stats["img_shape_filter"] += 1
             return None
 
@@ -73,13 +73,13 @@ class _BaseCrops(Dataset):
 
         img = torch.tensor(img, dtype=torch.float32).unsqueeze(0) / 255.
 
-        if not self.for_train:
-            self.stats["passed"] += 1
-            return img, gt_text
-
         if len(gt_text) <= 1:
             self.stats["text_len_filter"] += 1
             return None
+
+        if not self.for_train:
+            self.stats["passed"] += 1
+            return img, gt_text
 
         if any(ch not in self.converter.char2idx for ch in gt_text):
             self.stats["char_invalid"] += 1
@@ -164,6 +164,10 @@ def recognize_imgs(img_list      : Sequence[np.ndarray],
     # result1 : [(text, conf), ...]
     return result1
 
+def clean_text(text: str) -> str:
+    # 영어, 숫자, 한글만 남기고 제거
+    return re.sub(r"[^a-zA-Z0-9가-힣]", "", text).lower()
+
 def evaluate_dataset(reader,
                      data_loader,
                      device: str = "cuda",
@@ -183,7 +187,7 @@ def evaluate_dataset(reader,
     opt         = reader.opt2val               # imgH·imgW 등 들어 있음
     recog.eval()
 
-    hit = tot = 0
+    hit = tot = hit_cleaned = 0
     fp   = open(save_csv, "w", newline="", encoding="utf-8") if save_csv else None
     wr   = csv.writer(fp) if fp else None
     if wr:
@@ -202,8 +206,12 @@ def evaluate_dataset(reader,
 
         # ★ 3) 집계·출력 --------------------------------------------
         for (pr_txt, conf), gt in zip(preds, gts):
-            ok  = int(gt.replace(" ", "") == pr_txt.replace(" ", ""))
+            ok  = int(gt.replace(" ", "").lower() == pr_txt.replace(" ", "").lower()) #공백 무시하고 평가
             hit += ok;  tot += 1
+            
+            gt_cleaned = clean_text(gt); pr_cleaned = clean_text(pr_txt)
+            ok_cleaned = int(gt_cleaned.replace(" ", "") == pr_cleaned.replace(" ", ""))
+            hit_cleaned += ok_cleaned
 
             print(f"GT: {gt}\nPR: {pr_txt}\nCONF:{conf:.3f}  "
                   f"{'✓' if ok else '✗'}\n{'-'*40}")
@@ -213,8 +221,12 @@ def evaluate_dataset(reader,
 
     # ────────────────────────────────────────────────────────────────
     acc = hit / tot if tot else 0
+    acc_cleaned = hit_cleaned / tot if tot else 0
+    
     print(f"\n✅  accuracy = {hit}/{tot}  ({acc:.2%})")
+    print(f"🧹  특수기호 제거 accuracy = {hit_cleaned}/{tot}  ({acc_cleaned:.2%})")
     if fp:
         fp.close()
         print(f"🔖  CSV saved to:  {save_csv}")
-        wandb.log({"eval/accuracy": acc})
+        wandb.log({"eval/accuracy": acc, "eval/accuracy_cleaned": acc_cleaned})
+        
