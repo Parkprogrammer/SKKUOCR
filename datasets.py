@@ -15,9 +15,8 @@ from pororo.models.brainOCR.recognition import AlignCollate, ListDataset,       
 import wandb
 
 
-FORBIDDEN = re.compile(r'[←→↔↕↖↗↘↙➔➜]')   # ← ① compile!
-_tbl = str.maketrans({"\n": " ", "\t": " "})
-
+FORBIDDEN = re.compile(r'[←→↔↕↖↗↘↙➔➜·●】≠○↑×■□▲△▼▽◇◆★]')  # 경고에 나온 특수 문자들을 추가
+_tbl = str.maketrans({"\n": " ", "\t": " "})  # 빠른 치환용 table
 class _BaseCrops(Dataset):
     def __init__(self, *, csv_fp: Path, img_dir: Path,
                  img_size=(100, 64), converter=None, for_train=True):

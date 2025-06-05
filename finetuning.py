@@ -38,9 +38,9 @@ def get_unique_save_dir(base_dir="assets", prefix="test"):
             return save_dir
         idx += 1
 
-FORBIDDEN = r'[←→↔↕↖↗↘↙➔➜]'      # 필요에 따라 추가
+FORBIDDEN = re.compile(r'[←→↔↕↖↗↘↙➔➜·●】≠○↑×■□▲△▼▽◇◆★]')  # 경고에 나온 특수 문자들을 추가
 tbl = str.maketrans({"\n": " ", "\t": " "})  # 빠른 치환용 table
-UNKNOWN_SET = set()          # 학습 시작 전에 한 번 비워둡니다
+UNKNOWN_SET = set() 
 
 # --------------------------------------------------------------------------
 # 1. 데이터셋 + collate
@@ -416,7 +416,7 @@ def test_only(model_ckpt_fp, opt_fp, test_root, device="cuda"):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--opt_txt",   default="ocr-opt.txt")
-    parser.add_argument("--train_root", default="CLOVA_V2_train")
+    parser.add_argument("--train_root", default="CLOVA_V3_train")
     parser.add_argument("--test_root",  default="CLOVA_V2_test")
     parser.add_argument("--epochs", type=int, default=5)
     parser.add_argument("--batch", type=int, default=64)
@@ -426,9 +426,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     # # Hyperparameter Search Space
-    # epoch_list = [50, 100, 200]
-    # batch_list = [32, 64, 128]
-    # lr_list = [1e-4, 5e-5, 1e-5, 5e-6, 1e-6]
+    # epoch_list = [200]
+    # batch_list = [32]
+    # lr_list = [1e-6]
 
     # # Grid Search
     # for epochs, batch_size, lr in itertools.product(epoch_list, batch_list, lr_list):
