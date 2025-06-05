@@ -184,36 +184,49 @@ def finetune(recognizer, converter, train_loader, epochs, lr, device="cuda"):
     optimizer = torch.optim.Adam(recognizer.parameters(), lr=lr)  # lr ↓
     scheduler  = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10,
                                                  gamma=0.5)  # 선택
-
+    
     for ep in range(1, epochs + 1):
+        running_loss = 0.0
+        batch_count = 0
+
         for step, batch in enumerate(train_loader):
-            if batch is None:           # 우리 collate 가 None 반환
+            if batch is None:
                 continue
-            
+
             imgs, tgt, tgt_len = batch
             imgs = imgs.to(device)
+            recognizer.zero_grad()
+
             try:
-                logits = recognizer(imgs)
+                logits = recognizer(imgs)  # (B, T, C)
                 log_probs = logits.log_softmax(2).permute(1, 0, 2)
-                input_len = torch.full((imgs.size(0),), logits.size(1),
-                                       dtype=torch.long, device=device)
+                input_len = torch.full(
+                    (imgs.size(0),), logits.size(1), dtype=torch.long, device=device
+                )
                 loss = criterion(log_probs, tgt, input_len, tgt_len)
-                
-                # ← loss 가 inf/nan이면 그 batch skip
+
                 if torch.isinf(loss) or torch.isnan(loss):
                     print(f"[skip] ep{ep} step{step}  loss={loss.item()}")
                     continue
 
-                optimizer.zero_grad()
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(recognizer.parameters(), 1.0)
                 optimizer.step()
+
+                running_loss += loss.item()
+                batch_count += 1
             except RuntimeError as e:
-                # unexpected CUDNN 오류도 skip
                 print(f"[error skip] {e}")
                 continue
-        print(f"[epoch {ep}/{epochs}] loss={loss.item():.4f}")
-        wandb.log({"epoch": ep, "loss": loss.item()})
+
+        # 3) 에포크별 평균 loss 및 lr 로그
+        avg_loss = running_loss / batch_count if batch_count > 0 else float("nan")
+        scheduler.step(avg_loss)
+
+        current_lr = optimizer.param_groups[0]['lr']
+        print(f"[epoch {ep}/{epochs}] avg_loss={avg_loss:.6f}, lr={current_lr:.2e}")
+        wandb.log({"epoch": ep, "avg_loss": avg_loss, "lr": current_lr})
+
 
 
 
@@ -297,8 +310,8 @@ def quick_eval(reader, data_loader, device="cuda", n_show=3):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--opt_txt",   default="ocr-opt.txt")
-    parser.add_argument("--train_root", default="train_clova")
-    parser.add_argument("--test_root",  default="test_clova")
+    parser.add_argument("--train_root", default="CLOVA_V3_train")
+    parser.add_argument("--test_root",  default="CLOVA_V2_test")
     parser.add_argument("--epochs", type=int, default=5)
     parser.add_argument("--batch", type=int, default=64)
     parser.add_argument("--device", default="cuda")
@@ -311,7 +324,7 @@ if __name__ == "__main__":
     
     wandb.init(
         project="brainocr-fine-tuning",      # 원하는 프로젝트 이름
-        name=f"{save_dir}_{args.epochs}_lr{args.lr}_clova",  # 실험(run) 이름
+        name=f"{save_dir}_{args.epochs}_lr{args.lr}_clovav2",  # 실험(run) 이름
         config={
             "epochs": args.epochs,
             "batch_size": args.batch,
