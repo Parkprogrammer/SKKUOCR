@@ -220,7 +220,7 @@ def evaluate_accuracy(recognizer, op2val, converter, test_loader, device="cuda")
 # --------------------------------------------------------------------------
 # 3. 파인튜닝 함수
 # --------------------------------------------------------------------------
-def finetune(recognizer, op2val, converter, train_loader, test_loader, epochs, lr, save_dir: Path, device="cuda"):
+def finetune(recognizer, op2val, converter, train_loader, valid_loader, epochs, lr, save_dir: Path, device="cuda"):
     # 손실∙옵티마이저∙스케줄러 세팅
     criterion = torch.nn.CTCLoss(zero_infinity=True)
     optimizer = torch.optim.Adam(
@@ -233,12 +233,14 @@ def finetune(recognizer, op2val, converter, train_loader, test_loader, epochs, l
     recognizer.to(device)
     recognizer.train()
 
-    best_acc = 0.0  # 최고 ‘클린 정확도’ 기록
+    best_acc = 0.0  # 최고 validation 정확도 기록
 
     for ep in range(1, epochs + 1):
         running_loss = 0.0
         batch_count = 0
 
+        # Training phase
+        recognizer.train()
         for step, batch in enumerate(train_loader):
             if batch is None:
                 continue
@@ -270,33 +272,38 @@ def finetune(recognizer, op2val, converter, train_loader, test_loader, epochs, l
                 print(f"[error skip] {e}")
                 continue
 
-        # epoch별 평균 loss 및 lr 로그
-        avg_loss = running_loss / batch_count if batch_count > 0 else float("nan")
-        scheduler.step(avg_loss)
+        # epoch별 평균 training loss
+        avg_train_loss = running_loss / batch_count if batch_count > 0 else float("nan")
         current_lr = optimizer.param_groups[0]['lr']
-        print(f"[epoch {ep}/{epochs}] avg_loss={avg_loss:.6f}, lr={current_lr:.2e}")
-        wandb.log({"epoch": ep, "avg_loss": avg_loss, "lr": current_lr})
+        print(f"[epoch {ep}/{epochs}] train_loss={avg_train_loss:.6f}, lr={current_lr:.2e}")
 
-        # epoch별 마지막 배치 loss 로그
-        print(f"[epoch {ep}/{epochs}] last_batch_loss={loss.item():.4f}")
-        wandb.log({"epoch": ep, "loss": loss.item()})
+        # ── Validation phase ─────────────────────────────────────────────────
+        val_acc, val_loss = evaluate_accuracy(recognizer, op2val, converter, valid_loader, device=device)
+        print(f"--> [Validation] epoch {ep}: accuracy={val_acc*100:.2f}%, loss={val_loss:.6f}")
+        
+        # Learning rate scheduler step
+        scheduler.step(val_loss)
+        
+        # WandB 로깅
+        wandb.log({
+            "epoch": ep,
+            "train_loss": avg_train_loss,
+            "val_loss": val_loss,
+            "val_accuracy": val_acc,
+            "lr": current_lr
+        })
 
-        # ── 매 epoch마다 Validation (test_loader) 정확도 계산 ─────────────────
-        val_acc = evaluate_accuracy(recognizer, op2val, converter, test_loader, device=device)
-        print(f"--> [Validation] epoch {ep}: cleaned_accuracy={val_acc*100:.2f}%")
-        wandb.log({"epoch": ep, "val_accuracy_cleaned": val_acc})
-
-        # ── 최고 정확도 갱신 시 best.pt 저장 ─────────────────────────────────
+        # ── 최고 validation 정확도 갱신 시 best.pt 저장 ──────────────────────
         if val_acc > best_acc:
             best_acc = val_acc
             best_fp = save_dir / "best.pt"
             torch.save(recognizer.state_dict(), best_fp)
-            print(f"🟢 New best model saved (epoch {ep}, acc_cleaned={val_acc*100:.2f}%) → {best_fp}")
+            print(f"🟢 New best model saved (epoch {ep}, val_acc={val_acc*100:.2f}%) → {best_fp}")
 
-        # 검증 끝내고 다시 학습 모드로 변환
+        # 다시 학습 모드로 변환
         recursive_train(recognizer)
 
-    print(f"★ Training 끝. Best validation cleaned_accuracy={best_acc*100:.2f}%")
+    print(f"★ Training 끝. Best validation accuracy={best_acc*100:.2f}%")
     return
 
 
@@ -374,10 +381,24 @@ def quick_eval(reader, data_loader, device="cuda", n_show=3):
             print(f"GT: {gt}\nPR: {pr}\n")
         break
 
+def split_train_valid(dataset, val_ratio=0.2, random_state=42):
+    """
+    데이터셋을 train/validation으로 분리
+    """
+    indices = list(range(len(dataset)))
+    train_indices, val_indices = train_test_split(
+        indices, test_size=val_ratio, random_state=random_state
+    )
+    
+    train_subset = Subset(dataset, train_indices)
+    val_subset = Subset(dataset, val_indices)
+    
+    print(f"데이터 분리 완료: Train={len(train_subset)}, Valid={len(val_subset)}")
+    return train_subset, val_subset
+
 def train_and_evaluate(epochs, batch_size, lr, args):
     save_dir = Path(get_unique_save_dir(base_dir=args.save_dir, prefix="finetune"))
     print(f"모델 저장 경로: {save_dir}")
-
 
     wandb.init(
         project="brainocr-fine-tuning",
@@ -389,25 +410,29 @@ def train_and_evaluate(epochs, batch_size, lr, args):
             "device": args.device,
             "opt_txt": args.opt_txt,
             "train_root": args.train_root,
-            "test_root": args.test_root
+            "test_root": args.test_root,
+            "val_ratio": args.val_ratio
         }
     )
 
     # ① recognizer/ converter 생성
     rec, converter, opt_dict = build_recognizer(args.opt_txt, device=args.device)
 
-    # ② train 셋 준비
-    train_set = _BaseCrops(
+    # ② 전체 train 셋 준비
+    full_train_set = _BaseCrops(
         csv_fp=Path(args.train_root) / "train_labels.csv",
         img_dir=Path(args.train_root) / "merged_images",
         img_size=(256, 64),
         converter=converter,
         for_train=True,
     )
-    train_set.preload_for_stats()
-    train_set.print_filter_report()
+    full_train_set.preload_for_stats()
+    full_train_set.print_filter_report()
 
-    # ③ test 셋 준비
+    # ③ train/validation 분리
+    train_subset, val_subset = split_train_valid(full_train_set, val_ratio=args.val_ratio)
+
+    # ④ test 셋 준비
     test_set = _BaseCrops(
         csv_fp=Path(args.test_root) / "test_labels.csv",
         img_dir=Path(args.test_root) / "merged_images",
@@ -417,8 +442,9 @@ def train_and_evaluate(epochs, batch_size, lr, args):
     test_set.preload_for_stats()
     test_set.print_filter_report()
 
+    # ⑤ DataLoader 생성
     train_loader = DataLoader(
-        train_set,
+        train_subset,
         batch_size=batch_size,
         shuffle=True,
         num_workers=4,
@@ -426,6 +452,16 @@ def train_and_evaluate(epochs, batch_size, lr, args):
         drop_last=True,
         pin_memory=True
     )
+    
+    val_loader = DataLoader(
+        val_subset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=2,
+        collate_fn=collate_train,  # validation도 loss 계산을 위해 train collate 사용
+        pin_memory=True
+    )
+    
     test_loader = DataLoader(
         test_set,
         batch_size=batch_size,
@@ -435,13 +471,13 @@ def train_and_evaluate(epochs, batch_size, lr, args):
         pin_memory=True
     )
 
-    # ④ finetuning 시작 (train_loader, test_loader, save_dir 전달)
+    # ⑥ finetuning 시작 (validation 사용)
     finetune(
         recognizer=rec,
         op2val=opt_dict,
         converter=converter,
         train_loader=train_loader,
-        test_loader=test_loader,
+        valid_loader=val_loader,  # validation loader 사용
         epochs=epochs,
         lr=lr,
         save_dir=Path(save_dir),
@@ -450,7 +486,11 @@ def train_and_evaluate(epochs, batch_size, lr, args):
     
     save_ckpt(rec, opt_dict, save_dir)
 
-    # ⑤ 훈련이 끝난 후 (best.pt가 이미 저장됨) 테스트셋 전체 결과 저장
+    # ⑦ 훈련 완료 후 최종 테스트 (best 모델 로드)
+    print("\n" + "="*50)
+    print("최종 테스트 시작...")
+    print("="*50)
+    
     final_reader = brainocr.Reader(
         lang="ko",
         det_model_ckpt_fp="/workspace/SKKUOCR2/SKKUOCR_fine/assets/craft.pt",
@@ -460,10 +500,22 @@ def train_and_evaluate(epochs, batch_size, lr, args):
     )
     final_reader.recognizer.to(args.device)
 
+    # 최종 테스트 정확도 계산
+    test_acc, test_loss = evaluate_accuracy(final_reader.recognizer, opt_dict, converter, test_loader, device=args.device)
+    print(f"🎯 최종 테스트 결과: accuracy={test_acc*100:.2f}%")
+    
+    # WandB에 최종 테스트 결과 로깅
+    wandb.log({
+        "final_test_accuracy": test_acc,
+        "final_test_loss": test_loss
+    })
+
+    # 테스트 결과 상세 저장
     evaluate_dataset(final_reader, test_loader, device=args.device,
                      save_csv=str(Path(save_dir) / "test_pred.csv"))
 
     wandb.finish()
+    print(f"✅ 모든 과정 완료! 결과는 {save_dir}에 저장됨")
 
 
 def test_only(model_ckpt_fp, opt_fp, test_root, device="cuda"):
@@ -509,6 +561,7 @@ if __name__ == "__main__":
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--save_dir", default="assets")
     parser.add_argument("--lr", type=float, default=1e-4)
+    parser.add_argument("--val_ratio", type=float, default=0.2, help="Validation split ratio (default: 0.2)")
     args = parser.parse_args()
     
     train_and_evaluate(
