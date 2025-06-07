@@ -178,7 +178,7 @@ def evaluate_accuracy(recognizer, op2val, converter, test_loader, device="cuda")
                 
                 # 정확도 계산을 위해 GT 텍스트 디코딩
                 if hasattr(converter, "decode"):
-                    gt_texts, _ = converter.decode(tgt, tgt_len)
+                    gt_texts = converter.decode(tgt, tgt_len)
                 else:
                     gt_texts = converter.decode_greedy(tgt, tgt_len)
                     
@@ -220,7 +220,7 @@ def evaluate_accuracy(recognizer, op2val, converter, test_loader, device="cuda")
 # --------------------------------------------------------------------------
 # 3. 파인튜닝 함수
 # --------------------------------------------------------------------------
-def finetune(recognizer, op2val, converter, train_loader, valid_loader, epochs, lr, save_dir: Path, device="cuda"):
+def finetune(recognizer, op2val, converter, train_loader, valid_loader, test_loader, epochs, lr, save_dir: Path, device="cuda"):
     # 손실∙옵티마이저∙스케줄러 세팅
     criterion = torch.nn.CTCLoss(zero_infinity=True)
     optimizer = torch.optim.Adam(
@@ -280,6 +280,9 @@ def finetune(recognizer, op2val, converter, train_loader, valid_loader, epochs, 
         # ── Validation phase ─────────────────────────────────────────────────
         val_acc, val_loss = evaluate_accuracy(recognizer, op2val, converter, valid_loader, device=device)
         print(f"--> [Validation] epoch {ep}: accuracy={val_acc*100:.2f}%, loss={val_loss:.6f}")
+        
+        test_acc, test_loss = evaluate_accuracy(recognizer, op2val, converter, test_loader, device=device)
+        print(f"--> [Test] epoch {ep}: accuracy={test_acc*100:.2f}%, loss={test_loss:.6f}")
         
         # Learning rate scheduler step
         scheduler.step(val_loss)
@@ -478,6 +481,7 @@ def train_and_evaluate(epochs, batch_size, lr, args):
         converter=converter,
         train_loader=train_loader,
         valid_loader=val_loader,  # validation loader 사용
+        test_loader=test_loader,
         epochs=epochs,
         lr=lr,
         save_dir=Path(save_dir),
