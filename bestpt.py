@@ -10,7 +10,7 @@ from pororo.models.brainOCR.recognition import get_recognizer
 from pororo.models.brainOCR import brainocr      # Reader 클래스
 from pororo.tasks import download_or_load
 from pororo.models.brainOCR.brainocr import Reader   # Reader 안에 이미 util 존재
-from datasets import _BaseCrops, collate_eval, collate_train, evaluate_dataset, recognize_imgs
+from datasets import _BaseCrops, collate_eval, collate_train, evaluate_dataset, recognize_imgs1, recognize_imgs2
 import torch.nn.functional as F
 import re
 import numpy as np
@@ -153,18 +153,21 @@ def evaluate_accuracy(recognizer, op2val, converter, test_loader, device="cuda")
     total = 0
     total_loss = 0.0
     criterion = torch.nn.CTCLoss(zero_infinity=True)
+    
+    sum_counts = [0, 0, 0]  # 특수기호, 숫자, 기본 글자 카운트
+    sum_conf_sums = [0.0, 0.0, 0.0]  # 각 카운트의 confidence 합계
 
     # 필요한 opt2val을 동적으로 생성 (imgH, imgW, batch_size, adjust_contrast)
     with torch.no_grad():
         for batch in test_loader:
             if batch is None:
                 continue
-                
+
             # 배치 타입 확인
             if len(batch) == 3:  # train collate (imgs, tgt, tgt_len)
                 imgs, tgt, tgt_len = batch
                 imgs = imgs.to(device)
-                
+
                 # Loss 계산
                 logits = recognizer(imgs)
                 log_probs = logits.log_softmax(2).permute(1, 0, 2)
@@ -175,33 +178,43 @@ def evaluate_accuracy(recognizer, op2val, converter, test_loader, device="cuda")
                 loss = criterion(log_probs.cpu(), tgt.cpu(), input_len, tgt_len.cpu())
                 if not (torch.isinf(loss) or torch.isnan(loss)):
                     total_loss += loss.item()
-                
+
                 # 정확도 계산을 위해 GT 텍스트 디코딩
                 if hasattr(converter, "decode"):
                     gt_texts = converter.decode(tgt, tgt_len)
                 else:
                     gt_texts = converter.decode_greedy(tgt, tgt_len)
-                    
+
                 # 예측 텍스트 생성
                 img_list = (imgs[:, 0] * 255).byte().cpu().numpy()
                 img_list = [img for img in img_list]
-                preds = recognize_imgs(img_list, recognizer, converter, op2val)
-                
+                preds, counts, sum_confs = recognize_imgs2(img_list, recognizer, converter, op2val)
+
+                # 배치별 모델 통계 누적
+                for i in range(3):
+                    sum_counts[i] += counts[i]
+                    sum_conf_sums[i] += sum_confs[i]
+
                 for (pr_txt, conf), gt in zip(preds, gt_texts):
                     gt_clean = clean_text(gt)
                     pr_clean = clean_text(pr_txt)
                     if gt_clean == pr_clean:
                         hit_cleaned += 1
                     total += 1
-                    
+
             else:  # eval collate (imgs, gt_texts)
                 imgs, gt_texts = batch
                 imgs = imgs.to(device)
-                
+
                 # 예측 수행
                 img_list = (imgs[:, 0] * 255).byte().cpu().numpy()
                 img_list = [img for img in img_list]
-                preds = recognize_imgs(img_list, recognizer, converter, op2val)
+                preds, counts, sum_confs = recognize_imgs2(img_list, recognizer, converter, op2val)
+
+                # 배치별 모델 통계 누적
+                for i in range(3):
+                    sum_counts[i] += counts[i]
+                    sum_conf_sums[i] += sum_confs[i]
 
                 # 정확도 계산
                 for (pr_txt, conf), gt in zip(preds, gt_texts):
@@ -211,11 +224,19 @@ def evaluate_accuracy(recognizer, op2val, converter, test_loader, device="cuda")
                         hit_cleaned += 1
                     total += 1
 
+    # 전체 평균 confidence 계산
+    overall_avg_confs = [
+        (sum_conf_sums[i] / sum_counts[i]) if sum_counts[i] else 0.0
+        for i in range(3)
+    ]
+
     if total == 0:
         return 0.0, 0.0
-    
+
+    print(f"전체 테스트 데이터 모델별 (count/avg_conf) 특수기호: {sum_counts[0]}/{overall_avg_confs[0]:.3f}, 숫자: {sum_counts[1]}/{overall_avg_confs[1]:.3f}, 기본: {sum_counts[2]}/{overall_avg_confs[2]:.3f}")
+
     avg_loss = total_loss / len(test_loader) if len(test_loader) > 0 else 0.0
-    return hit_cleaned / total, avg_loss
+    return hit_cleaned / total, avg_loss, sum_counts, overall_avg_confs
 
 # --------------------------------------------------------------------------
 # 3. 파인튜닝 함수
@@ -278,21 +299,42 @@ def finetune(recognizer, op2val, converter, train_loader, valid_loader, test_loa
         print(f"[epoch {ep}/{epochs}] train_loss={avg_train_loss:.6f}, lr={current_lr:.2e}")
 
         # ── Validation phase ─────────────────────────────────────────────────
-        val_acc, val_loss = evaluate_accuracy(recognizer, op2val, converter, valid_loader, device=device)
+        val_acc, val_loss, val_sum_counts, val_avg_confs = evaluate_accuracy(recognizer, op2val, converter, valid_loader, device=device)
         print(f"--> [Validation] epoch {ep}: accuracy={val_acc*100:.2f}%, loss={val_loss:.6f}")
         
-        test_acc, test_loss = evaluate_accuracy(recognizer, op2val, converter, test_loader, device=device)
+        test_acc, test_loss, test_sum_counts, test_avg_confs = evaluate_accuracy(recognizer, op2val, converter, test_loader, device=device)
         print(f"--> [Test] epoch {ep}: accuracy={test_acc*100:.2f}%, loss={test_loss:.6f}")
         
         # Learning rate scheduler step
         scheduler.step(val_loss)
         
-        # WandB 로깅
+        # WandB 로깅 (nested dictionary structure for grouping)
         wandb.log({
             "epoch": ep,
-            "train_loss": avg_train_loss,
-            "val_loss": val_loss,
-            "val_accuracy": val_acc,
+            "train": {
+                "loss": avg_train_loss,
+                "accuracy": val_acc,  # training accuracy는 validation과 동일하게 처리
+            },
+            "validation": {
+                "accuracy": val_acc,
+                "loss": val_loss,
+                "count_model3": val_sum_counts[0],
+                "count_model2": val_sum_counts[1],
+                "count_model1": val_sum_counts[2],
+                "avg_conf_model3": val_avg_confs[0],
+                "avg_conf_model2": val_avg_confs[1],
+                "avg_conf_model1": val_avg_confs[2],
+            },
+            "test": {
+                "accuracy": test_acc,
+                "loss": test_loss,
+                "count_model3": test_sum_counts[0] if 'test_sum_counts' in locals() else None,
+                "count_model2": test_sum_counts[1] if 'test_sum_counts' in locals() else None,
+                "count_model1": test_sum_counts[2] if 'test_sum_counts' in locals() else None,
+                "avg_conf_model3": test_avg_confs[0] if 'test_avg_confs' in locals() else None,
+                "avg_conf_model2": test_avg_confs[1] if 'test_avg_confs' in locals() else None,
+                "avg_conf_model1": test_avg_confs[2] if 'test_avg_confs' in locals() else None,
+            },
             "lr": current_lr
         })
 
@@ -505,7 +547,7 @@ def train_and_evaluate(epochs, batch_size, lr, args):
     final_reader.recognizer.to(args.device)
 
     # 최종 테스트 정확도 계산
-    test_acc, test_loss = evaluate_accuracy(final_reader.recognizer, opt_dict, converter, test_loader, device=args.device)
+    test_acc, test_loss, test_sum_counts, test_avg_confs  = evaluate_accuracy(final_reader.recognizer, opt_dict, converter, test_loader, device=args.device)
     print(f"🎯 최종 테스트 결과: accuracy={test_acc*100:.2f}%")
     
     # WandB에 최종 테스트 결과 로깅

@@ -11,6 +11,7 @@ import torch.utils.data
 import torchvision.transforms as transforms
 from PIL import Image
 import cv2
+import re
 
 from .model import Model
 from .utils import CTCLabelConverter
@@ -40,6 +41,14 @@ def adjust_contrast_grey(img, target: float = 0.4):
 def count_digits(text):
     """Count the number of digits in the text."""
     return sum(c.isdigit() for c in text)
+
+
+def count_special_chars(text: str) -> int:
+    """
+    문자열에서 숫자, 영문, 한글이 아닌 모든 문자(예: -, ., /, ~ 등)의 개수를 반환합니다.
+    """
+    pattern = re.compile(r'[^0-9A-Za-z\uAC00-\uD7A3]')
+    return len(pattern.findall(text))
 
 class NormalizePAD(object):
 
@@ -150,6 +159,7 @@ def recognizer_predict(model, converter, test_loader, opt2val: dict):
 
     return result
 
+#숫자 중심
 def second_recognizer_predict(model, converter, test_loader, opt2val: dict):
     device = opt2val["device"]
 
@@ -180,6 +190,41 @@ def second_recognizer_predict(model, converter, test_loader, opt2val: dict):
                 confidence_score = pred_max_prob.cumprod(dim=0)[-1]
                 digit_count = count_digits(pred)
                 adjusted_confidence = confidence_score.item() + 0.2 * digit_count
+                result.append([pred, adjusted_confidence])
+
+    return result
+
+#특수 기호 중심
+def third_recognizer_predict(model, converter, test_loader, opt2val: dict):
+    device = opt2val["device"]
+
+    model.eval()
+    result = []
+    with torch.no_grad():
+        for image_tensors in test_loader:
+            batch_size = image_tensors.size(0)
+            inputs = image_tensors.to(device)
+            preds = model(inputs)  # (N, length, num_classes)
+
+            # rebalance
+            preds_prob = F.softmax(preds, dim=2)
+            preds_prob = preds_prob.cpu().detach().numpy()
+            pred_norm = preds_prob.sum(axis=2)
+            preds_prob = preds_prob / np.expand_dims(pred_norm, axis=-1)
+            preds_prob = torch.from_numpy(preds_prob).float().to(device)
+
+            # Select max probabilty (greedy decoding), then decode index to character
+            preds_lengths = torch.IntTensor([preds.size(1)] * batch_size)  # (N,)
+            _, preds_indices = preds_prob.max(2)  # (N, length)
+            preds_indices = preds_indices.view(-1)  # (N*length)
+            preds_str = converter.decode_greedy(preds_indices, preds_lengths)
+
+            preds_max_prob, _ = preds_prob.max(dim=2)
+
+            for pred, pred_max_prob in zip(preds_str, preds_max_prob):
+                confidence_score = pred_max_prob.cumprod(dim=0)[-1]
+                special_count = count_special_chars(pred)
+                adjusted_confidence = confidence_score.item() + 0.2 * special_count
                 result.append([pred, adjusted_confidence])
 
     return result

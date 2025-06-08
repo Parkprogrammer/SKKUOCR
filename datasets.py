@@ -4,27 +4,25 @@ import pandas as pd
 from pathlib import Path
 from torch.utils.data import Dataset
 import csv
-
+from statistics import mean
 from typing import Optional
 import torch.nn.functional as F
 import numpy as np 
 from torch.utils.data import DataLoader
 from typing import List, Sequence, Tuple
 from pororo.models.brainOCR.recognition import AlignCollate, ListDataset,               \
-                         recognizer_predict, second_recognizer_predict
+                         recognizer_predict, second_recognizer_predict, third_recognizer_predict
 import wandb
 
 
-FORBIDDEN = re.compile(r'[←→↔↕↖↗↘↙➔➜·●】≠○↑×■□▲△▼▽◇◆★]')
-tbl = str.maketrans({"\n": " ", "\t": " "})
-UNKNOWN_SET = set() 
-
+FORBIDDEN = re.compile(r'[←→↔↕↖↗↘↙➔➜·●】≠○↑×■□▲△▼▽◇◆★]')  # 경고에 나온 특수 문자들을 추가
+_tbl = str.maketrans({"\n": " ", "\t": " "})  # 빠른 치환용 table
 class _BaseCrops(Dataset):
     def __init__(self, *, csv_fp: Path, img_dir: Path,
                  img_size=(100, 64), converter=None, for_train=True):
 
         df = pd.read_csv(csv_fp, header=None, names=["filename", "text", "category"],
-                         dtype={"filename": str, "text": str},
+                         dtype={"filename": str, "text": str, "category": str},
                          keep_default_na=False)
         df = df[df["filename"].str.lower() != "filename"]
         df = df[df["text"].fillna("").str.strip().astype(bool)].reset_index(drop=True)
@@ -50,7 +48,7 @@ class _BaseCrops(Dataset):
         return len(self.df)
 
     def _clean(self, txt: str):
-        txt = txt.translate(tbl)
+        txt = txt.translate(_tbl)
         txt = FORBIDDEN.sub(" ", txt)
         txt = re.sub(r"\s{2,}", " ", txt).strip()
         return txt
@@ -66,13 +64,14 @@ class _BaseCrops(Dataset):
             return None
 
         h0, w0 = img.shape
-        if (w0 > 271) or (w0 * h0 > 18000) or (h0 * 3 < w0):
+        if w0 * h0 < 300 :
             self.stats["img_shape_filter"] += 1
             return None
 
         img = cv2.resize(img, (self.imgW, self.imgH), interpolation=cv2.INTER_AREA)
+
         img = torch.tensor(img, dtype=torch.float32).unsqueeze(0) / 255.
-        
+
         if len(gt_text) <= 1:
             self.stats["text_len_filter"] += 1
             return None
@@ -100,7 +99,7 @@ class _BaseCrops(Dataset):
             if k == "total": continue
             print(f"{k:>18}: {v:>5} ({v/total*100:.2f}%)")
         print("==============================")
-
+        
     def preload_for_stats(self):
         for i in range(len(self)):
             _ = self.__getitem__(i)
@@ -122,7 +121,8 @@ def collate_eval(batch):
     return torch.stack(imgs), list(labels)
 
 
-def recognize_imgs(img_list      : Sequence[np.ndarray],
+# 기존 함수 - 숫자에 가중치 모델 예측 -> confidence 낮은 결과에 대해서만 기본 모델 예측
+def recognize_imgs1(img_list      : Sequence[np.ndarray],
                    recognizer,
                    converter,
                    opt2val : dict,
@@ -137,7 +137,7 @@ def recognize_imgs(img_list      : Sequence[np.ndarray],
     adjust_contrast     = 0.5
     batch_size          = opt2val["batch_size"]
     # n_workers           = opt2val["n_workers"]
-    n_workers           = 0
+    n_workers           = 2
 
     # ① 1st pass ──────────────────────────────────────
     collate   = AlignCollate(imgH, imgW, adjust_contrast)
@@ -163,6 +163,81 @@ def recognize_imgs(img_list      : Sequence[np.ndarray],
 
     # result1 : [(text, conf), ...]
     return result1
+
+# 3번째 path 추가 - 특수기호 가중치 모델 예측 -> 숫자에 가중치 모델 예측 -> 기본 모델 예측
+def recognize_imgs2(img_list      : Sequence[np.ndarray],
+                   recognizer,
+                   converter,
+                   opt2val : dict,
+                   conf_th : float = 0.2
+                  ) -> List[Tuple[str,float]]:
+    """
+    detector 없이, 이미지 crop 들(회색·RGB 아무거나)만 받아 글자를 읽어 낸다.
+    3단계 예측: third -> second -> recognizer 순으로 실행하고,
+    같은 위치에 대해 가장 높은 confidence 결과를 선택해 반환.
+    반환 값: [(텍스트, confidence), ...]  ―  입력 img_list 와 같은 순서
+    """
+    imgH, imgW     = opt2val["imgH"], opt2val["imgW"]
+    adjust_contrast= 0.5
+    batch_size     = opt2val["batch_size"]
+    n_workers      = 2
+
+    collate = AlignCollate(imgH, imgW, adjust_contrast)
+
+    # ① 3rd pass ──────────────────────────────────────
+    dl3      = DataLoader(ListDataset(img_list), batch_size,
+                          shuffle=False, num_workers=n_workers,
+                          collate_fn=collate, pin_memory=True)
+    result3  = third_recognizer_predict(recognizer, converter, dl3, opt2val)
+
+    # 초기 source tracking: 기본값 3rd 모델
+    N = len(img_list)
+    final_source = ['3'] * N
+
+    # ② 2nd pass (저신뢰만) ───────────────────────────
+    low_idx2 = [i for i, (_, conf) in enumerate(result3) if conf < conf_th]
+    result2 = result3.copy()
+    if low_idx2:
+        img2 = [img_list[i] for i in low_idx2]
+        dl2  = DataLoader(ListDataset(img2), batch_size,
+                          shuffle=False, num_workers=n_workers,
+                          collate_fn=collate, pin_memory=True)
+        preds2 = second_recognizer_predict(recognizer, converter, dl2, opt2val)
+        for k, i in enumerate(low_idx2):
+            if preds2[k][1] > result2[i][1]:
+                result2[i] = preds2[k]
+                final_source[i] = '2'
+
+    # ③ 1st pass (기본 모델, 여전히 저신뢰인 경우) ────────────────
+    low_idx1 = [i for i, (_, conf) in enumerate(result2) if conf < conf_th]
+    result1 = result2.copy()
+    if low_idx1:
+        img1 = [img_list[i] for i in low_idx1]
+        dl1  = DataLoader(ListDataset(img1), batch_size,
+                          shuffle=False, num_workers=n_workers,
+                          collate_fn=collate, pin_memory=True)
+        preds1 = recognizer_predict(recognizer, converter, dl1, opt2val)
+        for k, i in enumerate(low_idx1):
+            if preds1[k][1] > result1[i][1]:
+                result1[i] = preds1[k]
+                final_source[i] = '1'
+
+    # 각 모델별 최종 사용 카운트 출력
+    count3 = final_source.count('3')
+    count2 = final_source.count('2')
+    count1 = final_source.count('1')
+    counts = [count3, count2, count1]
+
+    # 평균 confidence 계산
+    confs3 = [conf for (txt, conf), src in zip(result1, final_source) if src == '3']
+    confs2 = [conf for (txt, conf), src in zip(result1, final_source) if src == '2']
+    confs1 = [conf for (txt, conf), src in zip(result1, final_source) if src == '1']
+    sum3 = sum(confs3)
+    sum2 = sum(confs2)
+    sum1 = sum(confs1)
+    sum_confs = [sum3, sum2, sum1]
+    
+    return result1, counts, sum_confs
 
 def clean_text(text: str) -> str:
     # 영어, 숫자, 한글만 남기고 제거
@@ -229,4 +304,3 @@ def evaluate_dataset(reader,
         fp.close()
         print(f"🔖  CSV saved to:  {save_csv}")
         wandb.log({"eval/accuracy": acc, "eval/accuracy_cleaned": acc_cleaned})
-        
