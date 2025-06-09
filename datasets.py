@@ -25,16 +25,19 @@ class _BaseCrops(Dataset):
 
         # 1) CSV 읽기 ----------------------------------------
         #   ① 헤더가 이미 있을 수도, 없을 수도 있으니 두 경우 모두 커버
-        df = pd.read_csv(csv_fp, header=None, names=["filename", "text"],
+        df = pd.read_csv(csv_fp,
                          dtype={"filename": str, "text": str},
-                         keep_default_na=False)   # NaN 대신 빈 문자열
+                         ) 
+
+        # df = pd.read_csv(csv_fp, header=None, names=["filename", "text"],
+        #                  dtype={"filename": str, "text": str},
+        #                  keep_default_na=False)   # NaN 대신 빈 문자열
 
         # 2) 헤더행(문자 그대로 'filename') 제거 ---------------
         df = df[df["filename"].str.lower() != "filename"]
 
         # 3) 빈텍스트 제거 ------------------------------------
         df = df[df["text"].str.strip().astype(bool)].reset_index(drop=True)
-
         self.df = df
         self.img_dir = img_dir
         self.imgW, self.imgH = img_size
@@ -44,6 +47,7 @@ class _BaseCrops(Dataset):
     def __len__(self): return len(self.df)
 
     def _clean(self, txt: str):
+        txt = str(txt)
         txt = txt.translate(_tbl)
         txt = FORBIDDEN.sub(" ", txt)
         txt = re.sub(r"\s{2,}", " ", txt).strip()
@@ -59,10 +63,16 @@ class _BaseCrops(Dataset):
         if img is None:                         
             return None
 
-        # quantile based filtering    
-        h0, w0 = img.shape[:2]
-        if (w0 > 271) or (w0 * h0 > 18000):
-            return None    
+
+        # quantile based filtering
+        # skip if the image is  too wide or too large    
+        # h0, w0 = img.shape[:2]
+        # if (w0 > 271) or (w0 * h0 > 18000) or (h0 * 3 < w0):
+        #     return None    
+
+        # if gt_text length is less than 2, skip 
+        if len(gt_text) < 2:
+            return None
 
         img = cv2.resize(img, (self.imgW, self.imgH),
                          interpolation=cv2.INTER_AREA)
@@ -144,7 +154,9 @@ def recognize_imgs(img_list      : Sequence[np.ndarray],
 def evaluate_dataset(reader,
                      data_loader,
                      device: str = "cuda",
-                     save_csv: Optional[str] = None):
+                     save_csv: Optional[str] = None,
+                     verbose: int = 0,                     
+):
     """
     전체 data_loader 를 돌며
       GT, PR 을 모두 출력하고 최종 accuracy 를 계산한다.
@@ -167,7 +179,10 @@ def evaluate_dataset(reader,
         wr.writerow(["ground_truth", "prediction", "confidence"])
 
     # ────────────────────────────────────────────────────────────────
-    for imgs, gts in data_loader:          # imgs : (B,1,H,W) / gts list[str]
+    for batch in data_loader:          # imgs : (B,1,H,W) / gts list[str]
+        if batch is None:
+            continue
+        imgs, gts = batch
         B = imgs.size(0)
 
         # ★ 1) Tensor → numpy 이미지 리스트 --------------------------
@@ -182,8 +197,9 @@ def evaluate_dataset(reader,
             ok  = int(gt.replace(" ", "") == pr_txt.replace(" ", ""))
             hit += ok;  tot += 1
 
-            print(f"GT: {gt}\nPR: {pr_txt}\nCONF:{conf:.3f}  "
-                  f"{'✓' if ok else '✗'}\n{'-'*40}")
+            if verbose == 0: 
+                print(f"GT: {gt}\nPR: {pr_txt}\nCONF:{conf:.3f}  "
+                      f"{'✓' if ok else '✗'}\n{'-'*40}")
 
             if wr:
                 wr.writerow([gt, pr_txt, f"{conf:.4f}"])

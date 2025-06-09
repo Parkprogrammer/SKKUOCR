@@ -128,6 +128,7 @@ def load_opt(opt_txt: str) -> dict:
 #     # ④ recognizer & converter 얻기
 #     model, converter = get_recognizer(opt)          # <- 이제 KeyError 안 남
 #     return model.to(device), converter, opt
+
 def build_recognizer(opt_txt_fp: str, device: str = "cuda"):
     # 1) 옵션 txt 읽기
     opt = Reader.parse_options(opt_txt_fp)
@@ -167,10 +168,10 @@ def build_recognizer(opt_txt_fp: str, device: str = "cuda"):
 # --------------------------------------------------------------------------
 def finetune(recognizer, converter, train_loader, epochs, learning_rate, device="cuda"):
 
-    print("Parmas with requires_grad=True")
-    for name, param in recognizer.named_parameters():
-        if param.requires_grad:
-            print(f"{name} | shape={tuple(param.shape)}")
+    # print("Parmas with requires_grad=True")
+    # for name, param in recognizer.named_parameters():
+    #     if param.requires_grad:
+    #         print(f"{name} | shape={tuple(param.shape)}")
 
 
     criterion = torch.nn.CTCLoss(zero_infinity=True)
@@ -180,46 +181,47 @@ def finetune(recognizer, converter, train_loader, epochs, learning_rate, device=
                                                 #  gamma=0.5)  # 선택
 
     for ep in range(1, epochs + 1):
+        running_loss = 0.0
+        batch_count = 0
+
         for step, batch in enumerate(train_loader):
-            if batch is None:           # 우리 collate 가 None 반환
+            if batch is None:
                 continue
-            
+
             imgs, tgt, tgt_len = batch
             imgs = imgs.to(device)
-            try:
-                logits = recognizer(imgs)
-                log_probs = logits.log_softmax(2).permute(1, 0, 2)
-                input_len = torch.full((imgs.size(0),), logits.size(1),
-                                       dtype=torch.long, device=device)
-                loss = criterion(log_probs, tgt, input_len, tgt_len)
-                # Check length
-                # if input_len.min() < tgt_len.max():
-                    # print(f"[invalid] input_len < tgt_len → input_len={input_len}, tgt_len={tgt_len}")
+            recognizer.zero_grad()
 
-                # if loss is inf or nan, print log and skip
+            try:
+                logits = recognizer(imgs)  # (B, T, C)
+                log_probs = logits.log_softmax(2).permute(1, 0, 2)
+                input_len = torch.full(
+                    (imgs.size(0),), logits.size(1), dtype=torch.long, device=device
+                )
+                loss = criterion(log_probs, tgt, input_len, tgt_len)
+
                 if torch.isinf(loss) or torch.isnan(loss):
                     print(f"[skip] ep{ep} step{step}  loss={loss.item()}")
-                    # for i in range(len(tgt_len)):
-                    #     print(f"  sample[{i}] → input_len={input_len[i]}, tgt_len={tgt_len[i]}, text_len={tgt_len[i].item()}")
-                    #     try:
-                    #         text_str, _ = converter.decode(tgt[i:i+1], tgt_len[i:i+1])
-                    #         print(f"    decoded: {text_str[0]}")
-                    #     except Exception as e:
-                    #         print(f"    decode error: {e}")
-                    #         print(f"    raw tgt[{i}]: {tgt[i]}")
-                    # continue
+                    continue
 
-                optimizer.zero_grad()
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(recognizer.parameters(), 1.0)
                 optimizer.step()
+
+                running_loss += loss.item()
+                batch_count += 1
             except RuntimeError as e:
-                # unexpected CUDNN 오류도 skip
                 print(f"[error skip] {e}")
                 continue
-        print(f"[epoch {ep}/{epochs}] loss={loss.item():.4f}")
-        wandb.log({"epoch": ep, "loss": loss.item()})
+
+        # 3) 에포크별 평균 loss 및 lr 로그
+        avg_loss = running_loss / batch_count if batch_count > 0 else float("nan")
+        # scheduler.step(avg_loss)
         scheduler.step()
+
+        current_lr = optimizer.param_groups[0]['lr']
+        print(f"[epoch {ep}/{epochs}] avg_loss={avg_loss:.6f}, lr={current_lr:.2e}")
+        wandb.log({"epoch": ep, "avg_loss": avg_loss, "lr": current_lr})
 
 
 # --------------------------------------------------------------------------
@@ -296,22 +298,7 @@ def quick_eval(reader, data_loader, device="cuda", n_show=3):
         break
 
 
-
-
-# --------------------------------------------------------------------------
-if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--opt_txt",   default="ocr-opt.txt")
-    parser.add_argument("--train_root", default="train_clova")
-    parser.add_argument("--test_root",  default="test_clova")
-    parser.add_argument("--epochs", type=int, default=5)
-    parser.add_argument("--learning_rate", type=float, default=1e-6)
-    parser.add_argument("--batch", type=int, default=64)
-    parser.add_argument("--device", default="cuda")
-    parser.add_argument("--save_dir", default="assets")
-    parser.add_argument("--exp_name", type=str, default="clvoa")
-    args = parser.parse_args()
+def main(args):
 
     wandb.init(
         project="brainocr-fine-tuning",
@@ -331,6 +318,22 @@ if __name__ == "__main__":
     rec, converter, opt_dict = build_recognizer(args.opt_txt, device=args.device)
 
     # dataloader -------------------------------------------------------------
+
+    # print("Debug")
+    # import pandas as pd
+    # csv_fp   = Path(args.train_root) / "train_labels.csv"
+    # print(csv_fp)
+    # df = pd.read_csv(csv_fp)   
+
+    # print(df.head())
+    # # 2) 헤더행(문자 그대로 'filename') 제거 ---------------
+    # df = df[df["filename"].str.lower() != "filename"]
+    # # 3) 빈텍스트 제거 ------------------------------------
+    # df = df[df["text"].str.strip().astype(bool)].reset_index(drop=True)
+
+    # print(df.head())
+    # return
+
     train_set = _BaseCrops(
         csv_fp   = Path(args.train_root) / "train_labels.csv",
         img_dir  = Path(args.train_root) / "merged_images",
@@ -390,7 +393,28 @@ if __name__ == "__main__":
         train_eval_set, batch_size=args.batch, shuffle=False,
         num_workers=2, collate_fn=collate_eval, pin_memory=True)
     
+    # evaluate_dataset(reader,
+    #              train_eval_loader,
+    #              device=args.device,
+    #              save_csv="assets/train_pred.csv")
+
     evaluate_dataset(reader,
-                 train_eval_loader,
+                 test_loader,
                  device=args.device,
                  save_csv="assets/train_pred.csv")
+
+# --------------------------------------------------------------------------
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--opt_txt",   default="ocr-opt.txt")
+    parser.add_argument("--train_root", default="train_clova_v3")
+    parser.add_argument("--test_root",  default="test_clova_v3")
+    parser.add_argument("--epochs", type=int, default=5)
+    parser.add_argument("--learning_rate", type=float, default=1e-6)
+    parser.add_argument("--batch", type=int, default=64)
+    parser.add_argument("--device", default="cuda")
+    parser.add_argument("--save_dir", default="assets")
+    parser.add_argument("--exp_name", type=str, default="clvoa")
+    args = parser.parse_args()
+
+    main(args)
