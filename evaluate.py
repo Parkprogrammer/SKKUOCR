@@ -38,7 +38,7 @@ def normalize_text(text: str) -> str:
 
 def compare_texts(text1: str, text2: str) -> Tuple[bool, bool, float]:
     """
-    Compare two texts using multiple criteria.
+    Compare two texts using Jaro-Winkler and FuzzyWuzzy max score.
     
     Args:
         text1: First text to compare
@@ -48,7 +48,7 @@ def compare_texts(text1: str, text2: str) -> Tuple[bool, bool, float]:
         Tuple of (exact_match, similar_match, similarity_score)
         - exact_match: True if texts are identical
         - similar_match: True if normalized texts are identical
-        - similarity_score: Float between 0.0-1.0 using SequenceMatcher
+        - similarity_score: Max of Jaro-Winkler and FuzzyWuzzy scores
     """
     # Handle None/NaN cases
     if not text1 or pd.isna(text1):
@@ -67,21 +67,37 @@ def compare_texts(text1: str, text2: str) -> Tuple[bool, bool, float]:
     norm2 = normalize_text(text2)
     similar_match = norm1 == norm2
     
-    # 3. Simple similarity score - if normalized texts are the same, return 1.0
+    # 3. Similarity score using max of Jaro-Winkler and FuzzyWuzzy
     if similar_match and norm1:  # Don't give 1.0 for empty strings
         similarity = 1.0
     elif not norm1 and not norm2:  # Both empty
         similarity = 1.0
     else:
-        # Use SequenceMatcher only if they're different
-        similarity = SequenceMatcher(None, norm1, norm2).ratio()
+        # Calculate Jaro-Winkler score
+        jw_score = 0.0
+        try:
+            from jarowinkler import jarowinkler_similarity
+            jw_score = jarowinkler_similarity(norm1, norm2)
+        except ImportError:
+            pass
+        
+        # Calculate FuzzyWuzzy score
+        fuzzy_score = 0.0
+        try:
+            from fuzzywuzzy import fuzz
+            fuzzy_score = fuzz.ratio(norm1, norm2) / 100.0
+        except ImportError:
+            pass
+        
+        # Use max of both scores
+        similarity = max(jw_score, fuzzy_score)
     
     return exact_match, similar_match, similarity
 
 
 def calculate_similarity_stats(csv_path: str, exclude_handwriting: bool = False) -> Dict:
     """
-    Calculate similarity statistics from existing CSV results (NaN excluded).
+    Calculate similarity statistics from existing CSV results using new comparison method.
     
     Args:
         csv_path: Path to CSV file containing OCR vs GPT results
@@ -93,7 +109,7 @@ def calculate_similarity_stats(csv_path: str, exclude_handwriting: bool = False)
     print(f"Reading CSV: {csv_path}")
     
     # Read CSV file
-    df = pd.read_csv(csv_path, keep_default_na=False)
+    df = pd.read_csv(csv_path, keep_default_na=True)
     print(f"Total rows in CSV: {len(df)}")
     
     # Debug: Check image path patterns
@@ -109,12 +125,15 @@ def calculate_similarity_stats(csv_path: str, exclude_handwriting: bool = False)
     # Filter out invalid data
     valid_mask = ~df['gpt_text'].isin(['nan', 'NaN', '', 'null', 'None'])
     valid_mask = valid_mask & df['gpt_text'].notna()
-    
-    # Convert similarity_score to numeric
-    df['similarity_score'] = pd.to_numeric(df['similarity_score'], errors='coerce')
-    valid_mask = valid_mask & df['similarity_score'].notna()
+    valid_mask = valid_mask & df['ocr_text'].notna()  # OCR text도 체크
     
     print(f"After basic filtering: {valid_mask.sum()} rows")
+    
+    excluded_df = df[~valid_mask]
+    print("\n[Excluded Rows Sample]")
+    print(excluded_df[['image_path', 'ocr_text', 'gpt_text']])
+    
+    
     
     # Optionally exclude handwriting samples
     if exclude_handwriting:
@@ -135,7 +154,7 @@ def calculate_similarity_stats(csv_path: str, exclude_handwriting: bool = False)
         
         print("Excluding handwriting samples from analysis")
     
-    # Always exclude handwriting/B samples (if you want this permanently)
+    # Always exclude handwriting/B samples
     handwriting_b_mask = df['image_path'].str.contains('handwriting/B', na=False)
     print(f"Handwriting/B samples found: {handwriting_b_mask.sum()}")
     valid_mask = valid_mask & ~handwriting_b_mask
@@ -150,13 +169,36 @@ def calculate_similarity_stats(csv_path: str, exclude_handwriting: bool = False)
         print("No valid data found!")
         return {"error": "No valid data"}
     
-    # Calculate statistics
-    total_comparisons = len(valid_df)
-    exact_matches = valid_df['exact_match'].sum()
-    similar_matches = valid_df['similar_match'].sum()
-    similarity_scores = valid_df['similarity_score']
+    # Recalculate similarity scores using new method
+    print("Recalculating similarity scores using new method...")
+    new_similarities = []
+    exact_matches = 0
+    similar_matches = 0
     
-    # Basic statistics
+    for idx, row in valid_df.iterrows():
+        ocr_text = str(row.get('ocr_text', ''))
+        gpt_text = str(row.get('gpt_text', ''))
+        
+        if (pd.isna(row.get('gpt_text')) or 
+            gpt_text in ('', 'nan', 'NaN', 'null', 'None') or
+            len(gpt_text.strip()) == 0):
+            print("SKIP")
+            continue  # 정확도 영향 0
+        
+        # Use new comparison method
+        exact, similar, similarity = compare_texts(ocr_text, gpt_text)
+        
+        new_similarities.append(similarity)
+        if exact:
+            exact_matches += 1
+        if similar:
+            similar_matches += 1
+    
+    # Convert to numpy array for statistics
+    similarity_scores = np.array(new_similarities)
+    
+    # Calculate statistics
+    total_comparisons = len(similarity_scores)
     avg_similarity = similarity_scores.mean()
     min_similarity = similarity_scores.min()
     max_similarity = similarity_scores.max()
@@ -170,7 +212,7 @@ def calculate_similarity_stats(csv_path: str, exclude_handwriting: bool = False)
     
     # Print results
     print(f"\n{'='*60}")
-    print("Similarity Statistics (NaN excluded)")
+    print("Similarity Statistics (New Method: Max of Jaro-Winkler & FuzzyWuzzy)")
     print(f"{'='*60}")
     print(f"Total valid comparisons: {total_comparisons:,}")
     print(f"\nAccuracy Metrics:")
@@ -196,11 +238,13 @@ def calculate_similarity_stats(csv_path: str, exclude_handwriting: bool = False)
     
     # Show worst performing samples
     print(f"\nLowest Similarity Samples (top 5):")
-    lowest_sim = valid_df.nsmallest(5, 'similarity_score')[
-        ['image_path', 'bbox_index', 'ocr_text', 'gpt_text', 'similarity_score']
+    valid_df_copy = valid_df.copy()
+    valid_df_copy['new_similarity'] = similarity_scores
+    lowest_sim = valid_df_copy.nsmallest(5, 'new_similarity')[
+        ['image_path', 'bbox_index', 'ocr_text', 'gpt_text', 'new_similarity']
     ]
     for _, row in lowest_sim.iterrows():
-        print(f"  {row['similarity_score']:.3f}: OCR='{row['ocr_text'][:30]}...' | "
+        print(f"  {row['new_similarity']:.3f}: OCR='{row['ocr_text'][:30]}...' | "
               f"GPT='{row['gpt_text'][:30]}...'")
     print(f"{'='*60}")
     
@@ -214,7 +258,6 @@ def calculate_similarity_stats(csv_path: str, exclude_handwriting: bool = False)
         'max_similarity': max_similarity,
         'std_similarity': std_similarity
     }
-
 
 def evaluate_ocr_vs_gpt(csv_path: str, exclude_handwriting: bool = False) -> Dict:
     """
@@ -231,7 +274,8 @@ def evaluate_ocr_vs_gpt(csv_path: str, exclude_handwriting: bool = False) -> Dic
     ocr = Pororo(task="ocr", lang="ko", model="brainocr")
     
     print(f"Reading CSV: {csv_path}")
-    df = pd.read_csv(csv_path, keep_default_na=False)
+    # df = pd.read_csv(csv_path, keep_default_na=False)
+    df = pd.read_csv(csv_path, keep_default_na=True, na_values=['', ' ', 'nan', 'NaN'])
     print(f"Total rows in CSV: {len(df)}")
     
     # Optionally exclude handwriting samples
@@ -338,8 +382,9 @@ def evaluate_ocr_vs_gpt(csv_path: str, exclude_handwriting: bool = False) -> Dic
 def main():
     
     csv_files = [
-        "train_2_ocr_gpt_results_org.csv",
-        "test_2_ocr_gpt_results_org.csv"
+        # "train_2_ocr_gpt_results_org.csv",
+        # "test_2_ocr_gpt_results_org.csv",
+        "post_test_2_ocr_gpt_results.csv"
     ]
 
     
@@ -350,7 +395,7 @@ def main():
             print(f"{'='*60}")
             
             # Method 1: Analyze existing CSV results
-            print("\n[Method 1] Analyzing existing CSV results...")
+            # print("\n[Method 1] Analyzing existing CSV results...")
             # stats1 = calculate_similarity_stats(csv_file, exclude_handwriting=False)
             
             # Method 2: Re-run OCR and compare (uncomment if needed)
