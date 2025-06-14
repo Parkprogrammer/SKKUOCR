@@ -68,7 +68,19 @@ python finetune_brainocr.py \
     --batch 32 \
     --lr 1e-6
 ```
-# 하이퍼파라미터 그리드 서치 (주석 해제 필요)
-# epoch_list = [200]
-# batch_list = [32] 
-# lr_list = [1e-6]
+SKKUOCR/
+├── pororo/                           # 메인 OCR 라이브러리
+│   ├── models/brainOCR/             # BrainOCR 모델 구현
+│   │   ├── brainocr.py             # Reader 클래스
+│   │   ├── recognition.py          # 인식 모델 및 예측 함수
+│   │   ├── detection.py            # CRAFT 검출 모델
+│   │   ├── model.py                # 모델 아키텍처
+│   │   └── modules/                # 서브모듈들
+│   └── tasks/                       # 태스크별 팩토리 클래스
+│       └── optical_character_recognition.py
+├── datasets.py                      # 데이터셋 및 전처리 유틸리티
+├── finetune_brainocr.py            # 모델 파인튜닝 스크립트
+├── finetune.py                     # GPT-4 기반 데이터 수집
+├── main.py                         # 기본 OCR 실행 스크립트
+└── utils/                          # 유틸리티 함수들
+    └── image_util.py              # 이미지 처리 유틸리티
