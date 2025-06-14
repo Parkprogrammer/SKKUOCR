@@ -1,67 +1,74 @@
-<h2 align="center">
-Korean OCR using pororo
-</h2>
+# Efficient OCR for Information Digitalization
 
-<div align="center">
-  <img src="https://img.shields.io/badge/python-v3.7.13-blue.svg"/>
-  <img src="https://img.shields.io/badge/torch-v1.13.1-blue.svg"/>
-  <img src="https://img.shields.io/badge/torchvision-v0.14.1-blue.svg"/>
-  <img src="https://img.shields.io/badge/opencv_python-v4.7.0.68-blue.svg"/>
-</div>
+SKKU OCR 프로젝트는 제한된 자원 환경에서 다국어 텍스트 인식의 성능을 향상시키기 위한 연구입니다. 특히 한국어와 같은 복잡한 언어에서 발생하는 클래스 불균형과 특수문자 인식 문제를 해결하기 위해 혁신적인 Greedy Model Selection Algorithm을 제안합니다.
 
-This is a Korean OCR Python code using the Pororo library.
+## 🎯 주요 기여
 
-<div align="center">
-<img src="https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FboAZK8%2FbtrYeYCWzKj%2Ft3Lhe05Bqm1iQNkOo4x9Lk%2Fimg.png" width="70%">
-</div>
+### 1. Greedy Model Selection Algorithm
+- **3단계 계층적 예측**: 특수문자 → 숫자 → 기본 모델 순서로 실행
+- **신뢰도 기반 모델 선택**: 각 단계별 confidence threshold를 통한 최적 결과 선택
+- **10배 향상된 효율성**: 기존 방법 대비 계산 비용 대폭 절감
 
-## Requirements
+### 2. 다국어 클래스 불균형 해결
+- **통계적 분석**: 영어(36개), 한국어(2393개) 문자 클래스 분석
+- **Confidence Distribution 분석**: 텍스트, 숫자, 특수문자별 신뢰도 패턴 발견
+- **T-test 검증**: Symbol Present vs Text Dominant 카테고리 간 유의미한 차이 확인 (p=0.0188)
 
-- torch
-- torchvision
-- opencv-python
+### 3. 효율적 Fine-tuning 전략
+- **GPT-4 기반 자동 레이블링**: 잘못된 OCR 결과 자동 수정
+- **노이즈 필터링**: Confidence threshold (≈1/2900) 기반 OOV 토큰 제거
+- **하이퍼파라미터 최적화**: Grid search를 통한 최적 학습률(1e-6), 배치 크기(32), 에포크(200) 도출
 
-You can install it from PyPI:
+## 📊 실험 결과
 
-```sh
-pip install torch
-pip install torchvision
-pip install opencv-python
+### 성능 향상
+- **2-path 모델**: 기존 대비 1% 정확도 향상
+- **3-path 모델**: 추가 1% 향상으로 총 2% 성능 개선
+- **특수문자 인식**: '/'와 '1' 구분 등 기존 오류 해결
+
+### 신뢰도 분석
+- **Text Dominant**: 높은 신뢰도와 낮은 분산
+- **Symbol Present**: 낮은 신뢰도와 높은 분산
+- **Cohen's d**: 0.2055 (medium effect size)
+
+## 🏗️ 시스템 아키텍처
+
+### Detection Module
+- **CRAFT 기반**: Region score와 Affinity score를 통한 텍스트 영역 검출
+- **U-Net 구조**: VGG16 백본과 업스케일링 컨볼루션
+
+### Recognition Module
+
+
+## 📦 설치 및 사용법
+
+### 요구사항
+```bash
+pip install torch torchvision opencv-python pillow
+pip install numpy pandas scikit-image wandb
+pip install openai python-dotenv  # GPT-4 기반 레이블링용
 ```
-
-## PORORO: Platform Of neuRal mOdels for natuRal language prOcessing
-
-[pororo](https://github.com/kakaobrain/pororo) is a library developed by KakaoBrain for performing natural language processing and speech-related tasks. 
-
-This repository is configured to only include the OCR functionality from the pororo library. If you wish to use other pororo features such as natural language processing, please install pororo through `pip install pororo`.
-
-## Usage
-
-```python
-from pororo import Pororo
-
-ocr = PororoOcr()
-image_path = input("Enter image path: ")
-text = ocr.run_ocr(image_path, debug=True)
-print('Result :', text)
+환경 설정
+bash# .env 파일 생성
+```bash
+echo "OPENAI_API_KEY=your_openai_api_key" > .env
 ```
-
-Output:
-
-```sh
-['메이크업존 MAKEUP ZONE', '드레스 피팅룸 DRESS FITTING ROOM', '포토존 PHOTO ZONE']
+데이터셋 준비
+bash# GPT-4 기반 OCR 결과 수정 및 데이터 수집
+```bash
+python finetune.py
 ```
-
-------
-
-
-
-<div align="center">
-<img src="https://user-images.githubusercontent.com/69428232/216900012-40572b3e-fc16-4bb0-a119-d61eaf680213.png" width="70%">
-</div>
-
-```sh
-["Life is ot a spectator sport. If you're going to spend your whole life in the grandstand just watching what goes on, in my apinion you're wasting your life.",
- "인생은 구경거리가 아니다. 무슨 일이 일어나는지 보기만 하는 것은 인생을 낭비하고 있는 것이다.",
- 'Jackie Robinson']
+모델 학습
+bash# 기본 파인튜닝
+```bash
+python finetune_brainocr.py \
+    --train_root CLOVA_V3_train \
+    --test_root CLOVA_V2_test \
+    --epochs 200 \
+    --batch 32 \
+    --lr 1e-6
 ```
+# 하이퍼파라미터 그리드 서치 (주석 해제 필요)
+# epoch_list = [200]
+# batch_list = [32] 
+# lr_list = [1e-6]
