@@ -46,7 +46,6 @@
 ```bash
 pip install torch torchvision opencv-python pillow
 pip install numpy pandas scikit-image wandb
-pip install openai python-dotenv  # GPT-4 기반 레이블링용
 ```
 
 ### 환경 설정
@@ -61,15 +60,9 @@ echo "OPENAI_API_KEY=your_openai_api_key" > .env
 python finetune.py
 ```
 
-### 모델 학습
+### 테스트
 ```bash
-# 기본 파인튜닝
-python finetune_brainocr.py \
-    --train_root CLOVA_V3_train \
-    --test_root CLOVA_V2_test \
-    --epochs 200 \
-    --batch 32 \
-    --lr 1e-6
+python main.py
 ```
 
 ## 📂 디렉토리 구조
