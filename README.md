@@ -65,7 +65,7 @@ python finetune.py
 python main.py
 ```
 
-## 📂 디렉토리 구조
+## 📂 디렉토리 구조 (업데이트 될 예정)
 ```
 SKKUOCR/
 ├── pororo/                           # 메인 OCR 라이브러리
