@@ -16,7 +16,6 @@ warnings.filterwarnings('ignore')
 class GPTOCRCorrector:
     
     #TODO: Change model from gpt-4-preview to ???
-    # def __init__(self, api_key: str, model: str = "gpt-4-vision-preview"):
     def __init__(self, api_key: str, model: str = "gpt-4o"):
       
         self.client = OpenAI(api_key=api_key)

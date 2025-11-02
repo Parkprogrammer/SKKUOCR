@@ -157,7 +157,6 @@ class Reader(object):
                 model_height=imgH,
             )
             
-        '''DEBUG'''
         img_color = cv2.cvtColor(img_cv_grey, cv2.COLOR_GRAY2BGR)
 
         result = get_text(image_list, self.recognizer, self.converter, opt2val,img_color)

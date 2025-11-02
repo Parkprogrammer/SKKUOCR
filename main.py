@@ -105,20 +105,17 @@ class PororoOcr:
 
 
 if __name__ == "__main__":
+    
     ocr = PororoOcr()
     # image_path = input("Enter image path: ")
-    IMAGE_PATH = "test/handwriting"
-    
+    IMAGE_PATH = input("Enter image path: ")
+    # IMAGE_PATH = "test/handwriting"
     
     for filename in os.listdir(IMAGE_PATH):
-        # filepath = os.path.join(IMAGE_PATH,filename)
-        filepath = "test/handwriting/C_008.png"
         
-        # if filepath.lower().endswith(('.png', '.jpg', '.jpeg')):
+        filepath = os.path.join(IMAGE_PATH,filename)
+        
         print(f"Processing {filepath}...")
-        # result = ocr(filepath)
-        # print(f"OCR result for {filepath}: {result}")
+        
         text = ocr.run_ocr(filepath, debug=False)
         print(f'Result for {filepath} : {text}')
-        #else:
-            # print(f"Skipping non-image file: {filepath}")

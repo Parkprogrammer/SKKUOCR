@@ -14,6 +14,11 @@ from torch import Tensor
 
 from .imgproc import load_image
 
+# NOTE: The Digit Coefficient of heuristic intervene
+DIGITCOEF = 0.2
+SPECCOEF = 0.2
+THRESHOLD = 0.2
+
 
 def consecutive(data, mode: str = "first", stepsize: int = 1):
     group = np.split(data, np.where(np.diff(data) != stepsize)[0] + 1)

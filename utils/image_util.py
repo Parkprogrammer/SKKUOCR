@@ -42,30 +42,21 @@ def plt_imshow(title='image', img=None, figsize=(8, 5)):
         plt.xticks([]), plt.yticks([])
         plt.show()
 
-
 # Changed line 58 to 48 
 # def put_text(image, text, x, y, color=(0, 255, 0), font_size=22):
-    
 #     font = ImageFont.load_default()
-    
 #     if type(image) == np.ndarray:
 #         color_coverted = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 #         image = Image.fromarray(color_coverted)
-
 #     if platform.system() == 'Darwin':
 #         font = 'AppleGothic.ttf'
 #     elif platform.system() == 'Windows':
 #         font = 'malgun.ttf'
-
 #     image_font = ImageFont.truetype(font, font_size)
-    
 #     draw = ImageDraw.Draw(image)
-
 #     draw.text((x, y), text, font=image_font, fill=color)
-
 #     numpy_image = np.array(image)
 #     opencv_image = cv2.cvtColor(numpy_image, cv2.COLOR_RGB2BGR)
-
 #     return opencv_image
 
 def put_text(image, text, x, y, color=(0, 255, 0), font_size=22):
