@@ -5,8 +5,14 @@
 <div align="center">
   <table>
     <tr>
-      <td align="center"><img src="notebooks/Algorithm.png" alt="Overview" height="300px"/></td>
-      <td align="center"><img src="notebooks/Label.png" alt="Speed vs Accuracy vs Cache" height="150px"/></td>
+      <td align="center">
+        <img src="notebooks/Algorithm.png" alt="Overview" height="300px"/><br/>
+        Hierarchical Prediction Algorithm
+      </td>
+      <td align="center">
+        <img src="notebooks/Label.png" alt="Speed vs Accuracy vs Cache" height="150px"/><br/>
+        Label Extraction
+      </td>
     </tr>
   </table>
 </div>
@@ -14,28 +20,28 @@
 ## Requirements
 
 ```bash
-    pip install -r requirements2.txt 
+pip install -r requirements2.txt 
 ```
 
 ## Usage
 ```bash
-    from pororo import Pororo
+from pororo import Pororo
 
-    ocr = PororoOcr()
-    image_path = input("Enter image path: ")
-    text = ocr.run_ocr(image_path, debug=True)
-    print('Result :', text)
+ocr = PororoOcr()
+image_path = input("Enter image path: ")
+text = ocr.run_ocr(image_path, debug=True)
+print('Result :', text)
 ```
 or test with
 ```bash
-    ''' 
-        ocr = PororoOcr()
-        IMAGE_PATH = input("Enter image path: ")
-        
-        
-        for filename in os.listdir(IMAGE_PATH):
-    ''' 
-    python main.py
+''' 
+    ocr = PororoOcr()
+    IMAGE_PATH = input("Enter image path: ")
+    
+    
+    for filename in os.listdir(IMAGE_PATH):
+''' 
+python main.py
 ```
 
 ## Additional Contributions made by our team
