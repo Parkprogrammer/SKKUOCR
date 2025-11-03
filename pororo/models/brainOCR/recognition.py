@@ -289,14 +289,17 @@ def get_text(image_list, recognizer, converter, opt2val: dict, original_img: np.
     
     imgW = opt2val["imgW"]
     imgH = opt2val["imgH"]
+    
     adjust_contrast = opt2val["adjust_contrast"]
     batch_size = opt2val["batch_size"]
+    
     n_workers = opt2val["n_workers"]
     contrast_ths = opt2val["contrast_ths"]
 
     coord = [item[0] for item in image_list]
     img_list = [item[1] for item in image_list]
     AlignCollate_normal = AlignCollate(imgH, imgW, adjust_contrast)
+    
     test_data = ListDataset(img_list)
     test_loader = torch.utils.data.DataLoader(
         test_data,
@@ -304,20 +307,21 @@ def get_text(image_list, recognizer, converter, opt2val: dict, original_img: np.
         shuffle=False,
         num_workers=n_workers,
         collate_fn=AlignCollate_normal,
-        pin_memory=True, )
+        pin_memory=True,)
 
- 
     contrast_ths = THRESHOLD
-    # predict first round
-    result1 = second_recognizer_predict(recognizer, converter, test_loader, opt2val)
-    # predict second round
-    low_confident_idx = [ i for i, item in enumerate(result1) if (item[1] < contrast_ths) ]
+    
+    # Round 1: third_recognizer_predict (special character focused)
+    result1 = third_recognizer_predict(recognizer, converter, test_loader, opt2val)
+    
+    low_conf_idx = [i for i, item in enumerate(result1) if item[1] < contrast_ths]
     
     result2_dict = {}
     still_low_idx = []
     
-    if len(low_confident_idx) > 0:
-        for idx in low_confident_idx:
+    # Round 2: rotation + second_recognizer_predict (digit focused)
+    if len(low_conf_idx) > 0:
+        for idx in low_conf_idx:
             img = img_list[idx]
             best_result = result1[idx]
             best_conf = result1[idx][1]
@@ -349,8 +353,9 @@ def get_text(image_list, recognizer, converter, opt2val: dict, original_img: np.
             if best_conf < contrast_ths:
                 still_low_idx.append(idx)
     
-    result3_dict = {} 
+    result3_dict = {}
     
+    # Round 3: rotation + recognizer_predict (base)
     if len(still_low_idx) > 0:
         for idx in still_low_idx:
             img = img_list[idx]
@@ -366,9 +371,14 @@ def get_text(image_list, recognizer, converter, opt2val: dict, original_img: np.
                 AlignCollate_contrast = AlignCollate(imgH, imgW, adjust_contrast)
                 test_data = ListDataset([rotated_img])
                 test_loader = torch.utils.data.DataLoader(
-                    test_data, batch_size=1, shuffle=False,
-                    num_workers=n_workers, collate_fn=AlignCollate_contrast, pin_memory=True, )
-                result = third_recognizer_predict(recognizer, converter, test_loader, opt2val)[0]
+                    test_data,
+                    batch_size=1,
+                    shuffle=False,
+                    num_workers=n_workers,
+                    collate_fn=AlignCollate_contrast,
+                    pin_memory=True,
+                )
+                result = recognizer_predict(recognizer, converter, test_loader, opt2val)[0]
                 
                 if result[1] > best_conf:
                     best_result = result
@@ -376,17 +386,16 @@ def get_text(image_list, recognizer, converter, opt2val: dict, original_img: np.
             
             result3_dict[idx] = best_result
     
+    # Combine results
     result = []
     for i in range(len(img_list)):
         box = coord[i]
         
         if i in result3_dict:
-            candidates = [ 
-                result1[i], result2_dict[i], result3_dict[i] ]
+            candidates = [result1[i], result2_dict[i], result3_dict[i]]
             best = max(candidates, key=lambda x: x[1])
             result.append((box, best[0], best[1]))
         elif i in result2_dict:
-            
             if result2_dict[i][1] > result1[i][1]:
                 result.append((box, result2_dict[i][0], result2_dict[i][1]))
             else:

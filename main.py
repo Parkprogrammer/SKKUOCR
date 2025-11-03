@@ -106,10 +106,11 @@ class PororoOcr:
 
 if __name__ == "__main__":
     
-    ocr = PororoOcr()
-    # image_path = input("Enter image path: ")
-    IMAGE_PATH = input("Enter image path: ")
     # IMAGE_PATH = "test/handwriting"
+        
+    ocr = PororoOcr()
+    IMAGE_PATH = input("Enter image path: ")
+    
     
     for filename in os.listdir(IMAGE_PATH):
         
