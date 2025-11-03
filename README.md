@@ -44,6 +44,17 @@ or test with
 python main.py
 ```
 
+## Training
+
+Fine-tune the recognizer model on custom datasets:
+```bash
+python train_sample.py --train_root CLOVA_V3_train \
+                    --test_root CLOVA_V2_test \
+                    --epochs 200 \
+                    --batch 64 \
+                    --lr 1e-4
+```
+
 ## Additional Contributions made by our team
 
 ### 1. Greedy Model Selection Algorithm
@@ -69,7 +80,8 @@ python main.py
     │   └── tasks/                      # Task-specific factory classes
     │       └── optical_character_recognition.py
     ├── ocr_utils.py                    # OCR utility functions (bbox, enhancement, validation)
-    ├── dataset.py             # Dataset generation pipeline with CLOVA API
+    ├── dataset.py                      # Dataset generation pipeline with CLOVA API
+    ├── train_sample.py                 # Fineunte on targeted samples
     ├── main.py                         # Main OCR execution script
     └── utils/                          # Utility functions
         └── image_util.py               # Image processing utilities
