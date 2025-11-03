@@ -1,6 +1,6 @@
 # Efficient OCR for Information Digitalization
 
-> This codebase is based on KaKaoBrain OCR Platform. Created as a part of SungKyunKwan University Project for Lightweight OCR.
+> Based on KaKaoBrain OCR Platform.
 
 <div align="center">
   <table>
